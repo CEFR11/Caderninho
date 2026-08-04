@@ -1,31 +1,70 @@
 package com.caderninho.Caderninho;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.util.List;
 
 
-    @RestController
-    @RequestMapping("/clientes") // Esse é o endereço de URL desse controller
-    public class ClienteController {
+@RestController
+@RequestMapping("/clientes")
+public class ClienteController {
 
-        @GetMapping
-        public Cliente BuscarCLiente() {
+    private final ClienteRepository clienteRepository;
+    private final LancamentoRepository lancamentoRepository;
 
-            Cliente donaMaria = new Cliente("1", "Dona Maria", "9999-9999");
+    public ClienteController(ClienteRepository clienteRepository, LancamentoRepository lancamentoRepository) {
+        this.clienteRepository = clienteRepository;
+        this.lancamentoRepository = lancamentoRepository;
 
-            Lancamento fiado = new Lancamento(TipoLancamento.FIADO, "CAMISA AZUL E BERMUDA SARJA", 120.0, LocalDate.now());
-            Lancamento pagamento = new Lancamento(TipoLancamento.PAGAMENTO, "Abatimento", 20.0, LocalDate.now());
-
-            donaMaria.adicionarLancamentos(fiado);
-            donaMaria.adicionarLancamentos(pagamento);
-
-            return donaMaria;
-
-        }
     }
+
+
+    @PostMapping
+    public Cliente cadastrarCliente(@RequestBody Cliente novoCliente) {
+        return clienteRepository.save(novoCliente);
+
+    }
+
+
+    @GetMapping
+    public List<Cliente> listarCliente() {
+        return clienteRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Cliente getID(@PathVariable Long id) {
+        return clienteRepository.findById(id).orElse(null);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteCliente(@PathVariable Long id) {
+        clienteRepository.deleteById(id);
+    }
+
+
+    @PostMapping("/{id}/lancamentos")
+    public Cliente lancamentos(@PathVariable Long id, @RequestBody Lancamento novoLancamento) {
+
+        Cliente cliente = clienteRepository.findById(id).orElse(null);
+
+        if (cliente == null) {
+            return null;
+        }
+
+        novoLancamento.setCliente(cliente);
+        lancamentoRepository.save(novoLancamento);
+        cliente.adicionarLancamentos(novoLancamento);
+        return cliente;
+
+    }
+}
+
+
+
+
+
+
+
 
 
 

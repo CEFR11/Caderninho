@@ -1,16 +1,34 @@
 package com.caderninho.Caderninho;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
 public class Lancamento {
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private TipoLancamento tipo;
     private String item;
-    private double valorTotal;
+    private BigDecimal valorTotal;
     private LocalDate data;
 
+    protected Lancamento() {
 
-    public Lancamento(TipoLancamento tipo, String item, double valorTotal, LocalDate data) {
+    }
+
+
+    @JsonIgnore
+    @ManyToOne
+    private Cliente cliente;
+
+    public Lancamento(TipoLancamento tipo, String item, BigDecimal valorTotal, LocalDate data) {
         this.tipo = tipo;
         this.item = item;
         this.valorTotal = valorTotal;
@@ -22,7 +40,7 @@ public class Lancamento {
         return tipo;
     }
 
-    public double getValorTotal() {
+    public BigDecimal getValorTotal() {
 
         return valorTotal;
     }
@@ -38,7 +56,13 @@ public class Lancamento {
     }
 
 
+    public Cliente getCliente() {
+        return cliente;
+    }
 
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
 }
 
 
