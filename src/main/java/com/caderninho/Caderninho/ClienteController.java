@@ -10,11 +10,11 @@ import java.util.List;
 public class ClienteController {
 
     private final ClienteRepository clienteRepository;
-    private final LancamentoRepository lancamentoRepository;
+    private final ClienteService clienteService;
 
-    public ClienteController(ClienteRepository clienteRepository, LancamentoRepository lancamentoRepository) {
+    public ClienteController(ClienteRepository clienteRepository, ClienteService clienteService) {
         this.clienteRepository = clienteRepository;
-        this.lancamentoRepository = lancamentoRepository;
+        this.clienteService = clienteService;
 
     }
 
@@ -44,17 +44,7 @@ public class ClienteController {
 
     @PostMapping("/{id}/lancamentos")
     public Cliente lancamentos(@PathVariable Long id, @RequestBody Lancamento novoLancamento) {
-
-        Cliente cliente = clienteRepository.findById(id).orElse(null);
-
-        if (cliente == null) {
-            return null;
-        }
-
-        novoLancamento.setCliente(cliente);
-        lancamentoRepository.save(novoLancamento);
-        cliente.adicionarLancamentos(novoLancamento);
-        return cliente;
+        return clienteService.registrarLancamento(id, novoLancamento);
 
     }
 }
