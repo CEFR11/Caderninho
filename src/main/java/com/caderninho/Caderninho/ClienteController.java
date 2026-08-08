@@ -1,5 +1,7 @@
 package com.caderninho.Caderninho;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,8 +47,17 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCliente(@PathVariable Long id) {
+    public ResponseEntity<String> deleteCliente(@PathVariable Long id) {
+        Cliente cliente = clienteRepository.findById(id).orElse(null);
+
+        if (cliente == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario não existe");
+        }
+        if (!cliente.getLancamentos().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Usuario possue lancamentos pendentes");
+        }
         clienteRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
 
