@@ -27,12 +27,10 @@ public class Cliente {
 
     }
 
-
     public Cliente(String nome, String telefone) {
         this(null, nome, telefone);
     }
 
-    @JsonCreator
     public Cliente(
             @JsonProperty("id") Long id,
             @JsonProperty("nome") String nome,

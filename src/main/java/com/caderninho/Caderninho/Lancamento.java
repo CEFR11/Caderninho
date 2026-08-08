@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+
 @Entity
 public class Lancamento {
 
@@ -19,14 +20,14 @@ public class Lancamento {
     private BigDecimal valorTotal;
     private LocalDate data;
 
+
+
+    @ManyToOne
+    private Cliente cliente;
+
     protected Lancamento() {
 
     }
-
-
-    @JsonIgnore
-    @ManyToOne
-    private Cliente cliente;
 
     public Lancamento(TipoLancamento tipo, String item, BigDecimal valorTotal, LocalDate data) {
         this.tipo = tipo;
@@ -41,17 +42,14 @@ public class Lancamento {
     }
 
     public BigDecimal getValorTotal() {
-
         return valorTotal;
     }
 
     public LocalDate getData() {
-
         return data;
     }
 
     public String getItem() {
-
         return item;
     }
 

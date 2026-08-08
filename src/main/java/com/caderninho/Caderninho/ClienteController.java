@@ -20,20 +20,28 @@ public class ClienteController {
 
 
     @PostMapping
-    public Cliente cadastrarCliente(@RequestBody Cliente novoCliente) {
-        return clienteRepository.save(novoCliente);
+    public ClienteDTO cadastrarCliente(@RequestBody Cliente novoCliente) {
+        Cliente cliente = clienteRepository.save(novoCliente);
+        return clienteService.converterClienteDTO(cliente);
 
     }
 
 
     @GetMapping
-    public List<Cliente> listarCliente() {
-        return clienteRepository.findAll();
+    public List<ClienteDTO> listarCliente() {
+        return clienteRepository.findAll().stream().map(clienteService::converterClienteDTO).toList();
     }
 
     @GetMapping("/{id}")
-    public Cliente getID(@PathVariable Long id) {
-        return clienteRepository.findById(id).orElse(null);
+    public ClienteDTO getID(@PathVariable Long id) {
+        Cliente cliente = clienteRepository.findById(id).orElse(null);
+
+        if (cliente == null) {
+            return null;
+        }
+        return clienteService.converterClienteDTO(cliente);
+
+
     }
 
     @DeleteMapping("/{id}")
@@ -43,8 +51,14 @@ public class ClienteController {
 
 
     @PostMapping("/{id}/lancamentos")
-    public Cliente lancamentos(@PathVariable Long id, @RequestBody Lancamento novoLancamento) {
-        return clienteService.registrarLancamento(id, novoLancamento);
+    public ClienteDTO lancamentos(@PathVariable Long id, @RequestBody Lancamento novoLancamento) {
+
+        Cliente clienteRegistro = clienteService.registrarLancamento(id, novoLancamento);
+
+        if (clienteRegistro == null) {
+            return null;
+        }
+        return clienteService.converterClienteDTO(clienteRegistro);
 
     }
 }
