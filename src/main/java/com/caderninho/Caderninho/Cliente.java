@@ -1,7 +1,5 @@
 package com.caderninho.Caderninho;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -31,10 +29,7 @@ public class Cliente {
         this(null, nome, telefone);
     }
 
-    public Cliente(
-            @JsonProperty("id") Long id,
-            @JsonProperty("nome") String nome,
-            @JsonProperty("telefone") String telefone) {
+    public Cliente(Long id, String nome, String telefone) {
         this.id = id;
         this.nome = nome;
         this.telefone = telefone;
