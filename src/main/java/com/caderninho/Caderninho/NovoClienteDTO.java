@@ -1,5 +1,8 @@
 package com.caderninho.Caderninho;
 
-public record NovoClienteDTO(String nome, String telefone) {
+import jakarta.validation.constraints.NotBlank;
+
+public record NovoClienteDTO(
+        @NotBlank String nome, @NotBlank String telefone) {
 
 }

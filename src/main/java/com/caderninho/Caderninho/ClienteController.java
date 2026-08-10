@@ -1,5 +1,6 @@
 package com.caderninho.Caderninho;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class ClienteController {
 
 
     @PostMapping
-    public ClienteDTO cadastrarCliente(@RequestBody NovoClienteDTO novoCliente) {
+    public ClienteDTO cadastrarCliente(@Valid @RequestBody NovoClienteDTO novoCliente) {
         Cliente cliente = new Cliente(novoCliente.nome(), novoCliente.telefone());
         cliente = clienteRepository.save(cliente);
         return clienteService.converterClienteDTO(cliente);
