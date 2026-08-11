@@ -37,13 +37,13 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}")
-    public ClienteDTO getID(@PathVariable Long id) {
+    public ResponseEntity<ClienteDTO> getID(@PathVariable Long id) {
         Cliente cliente = clienteRepository.findById(id).orElse(null);
 
         if (cliente == null) {
-            return null;
+            return ResponseEntity.notFound().build();
         }
-        return clienteService.converterClienteDTO(cliente);
+        return ResponseEntity.ok(clienteService.converterClienteDTO(cliente));
 
 
     }
@@ -64,14 +64,14 @@ public class ClienteController {
 
 
     @PostMapping("/{id}/lancamentos")
-    public ClienteDTO lancamentos(@PathVariable Long id, @Valid @RequestBody NovoLancamentoDTO novoLancamento) {
+    public ResponseEntity<ClienteDTO> lancamentos(@PathVariable Long id, @Valid @RequestBody NovoLancamentoDTO novoLancamento) {
 
         Cliente clienteRegistro = clienteService.registrarLancamento(id, novoLancamento);
 
         if (clienteRegistro == null) {
-            return null;
+            return ResponseEntity.notFound().build();
         }
-        return clienteService.converterClienteDTO(clienteRegistro);
+        return ResponseEntity.ok(clienteService.converterClienteDTO(clienteRegistro));
 
     }
 }
