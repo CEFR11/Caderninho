@@ -35,7 +35,7 @@ public class ClienteService {
     }
 
 
-    public Cliente registrarLancamento(Long id, Lancamento novoLancamento) {
+    public Cliente registrarLancamento(Long id, NovoLancamentoDTO novoLancamento) {
 
 
         Cliente cliente = clienteRepository.findById(id).orElse(null);
@@ -44,9 +44,10 @@ public class ClienteService {
             return null;
         }
 
-        novoLancamento.setCliente(cliente);
-        lancamentoRepository.save(novoLancamento);
-        cliente.adicionarLancamentos(novoLancamento);
+        Lancamento lancamento = new Lancamento(novoLancamento.tipo(), novoLancamento.item(), novoLancamento.valorTotal(), novoLancamento.data());
+        lancamento.setCliente(cliente);
+        lancamentoRepository.save(lancamento);
+        cliente.adicionarLancamentos(lancamento);
         return cliente;
 
     }

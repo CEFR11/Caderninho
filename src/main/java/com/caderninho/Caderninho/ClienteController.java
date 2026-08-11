@@ -64,7 +64,7 @@ public class ClienteController {
 
 
     @PostMapping("/{id}/lancamentos")
-    public ClienteDTO lancamentos(@PathVariable Long id, @RequestBody Lancamento novoLancamento) {
+    public ClienteDTO lancamentos(@PathVariable Long id, @Valid @RequestBody NovoLancamentoDTO novoLancamento) {
 
         Cliente clienteRegistro = clienteService.registrarLancamento(id, novoLancamento);
 
