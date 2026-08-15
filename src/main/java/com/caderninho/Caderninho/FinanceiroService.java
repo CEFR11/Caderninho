@@ -84,5 +84,11 @@ public class FinanceiroService {
 
     }
 
+    public List<FilaClienteDTO> gerarFila() {
+        List<Cliente> clientes = clienteRepository.findAll().stream().filter(c -> c.getSaldoDevedor().compareTo(BigDecimal.ZERO) > 0).toList();
+        List<FilaClienteDTO> filaClienteDTO = clientes.stream().map(c -> new FilaClienteDTO(c.getId(), c.getNome(), c.getSaldoDevedor(), c.getDiasSemPagar())).toList();
+        return filaClienteDTO;
+    }
+    
 
 }

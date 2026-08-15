@@ -3,8 +3,14 @@ package com.caderninho.Caderninho;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.lang.IllegalStateException;
+
 
 @Entity
 public class Cliente {
@@ -50,6 +56,26 @@ public class Cliente {
             }
         }
         return saldo;
+    }
+
+    public long getDiasSemPagar() {
+
+        Optional<LocalDate> ultimoPagamento = lancamentos.stream().filter(lancamento -> lancamento.getTipo() == TipoLancamento.PAGAMENTO).map(Lancamento::getData).max(Comparator.naturalOrder());
+        if (ultimoPagamento.isPresent()) {
+            LocalDate dataAntiga = ultimoPagamento.get();
+            long dias = ChronoUnit.DAYS.between(dataAntiga, LocalDate.now());
+            return dias;
+        }
+
+
+        Optional<LocalDate> ultimoFiado = lancamentos.stream().filter(lancamento -> lancamento.getTipo() == TipoLancamento.FIADO).map(Lancamento::getData).min(Comparator.naturalOrder());
+        if (ultimoFiado.isPresent()) {
+            LocalDate dataAntiga = ultimoFiado.get();
+            long dias = ChronoUnit.DAYS.between(dataAntiga, LocalDate.now());
+            return dias;
+        }
+
+        throw new IllegalStateException("Cliente sem historico de lançamentos");
     }
 
     public Long getId() {

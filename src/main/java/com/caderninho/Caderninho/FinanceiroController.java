@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/financeiro")
 public class FinanceiroController {
@@ -18,6 +20,11 @@ public class FinanceiroController {
     @GetMapping("/resumo")
     public ResponseEntity<FinanceiroResumoDTO> getResumo() {
         return ResponseEntity.ok(financeiroService.gerarResumo());
+    }
+
+    @GetMapping("/fila")
+    public ResponseEntity<List<FilaClienteDTO>> gerarFila() {
+        return ResponseEntity.ok(financeiroService.gerarFila());
     }
 
 }
