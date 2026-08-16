@@ -3,6 +3,7 @@ package com.caderninho.Caderninho;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,8 +24,8 @@ public class FinanceiroController {
     }
 
     @GetMapping("/fila")
-    public ResponseEntity<List<FilaClienteDTO>> gerarFila() {
-        return ResponseEntity.ok(financeiroService.gerarFila());
+    public ResponseEntity<List<FilaClienteDTO>> gerarFila(@RequestParam(defaultValue = "prioridade") String filtro) {
+        return ResponseEntity.ok(financeiroService.gerarFila(filtro));
     }
 
 }

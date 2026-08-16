@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -84,11 +85,27 @@ public class FinanceiroService {
 
     }
 
-    public List<FilaClienteDTO> gerarFila() {
+    public List<FilaClienteDTO> gerarFila(String filtro) {
         List<Cliente> clientes = clienteRepository.findAll().stream().filter(c -> c.getSaldoDevedor().compareTo(BigDecimal.ZERO) > 0).toList();
         List<FilaClienteDTO> filaClienteDTO = clientes.stream().map(c -> new FilaClienteDTO(c.getId(), c.getNome(), c.getSaldoDevedor(), c.getDiasSemPagar())).toList();
-        return filaClienteDTO;
+
+        switch (filtro) {
+            case "atrasados":
+                return filaClienteDTO.stream().filter(c -> c.dias() >= 30).sorted(Comparator.comparing(FilaClienteDTO::dias).reversed()).toList();
+
+            case "valor":
+                return filaClienteDTO.stream().sorted(Comparator.comparing(FilaClienteDTO::saldo).reversed()).toList();
+
+            case "recentes":
+
+                return filaClienteDTO.stream().sorted(Comparator.comparing(FilaClienteDTO::dias)).toList();
+
+            default:
+
+                return filaClienteDTO.stream().sorted(Comparator.comparing((FilaClienteDTO c) -> c.saldo().multiply(BigDecimal.valueOf(c.dias()))).reversed()).toList();
+
+        }
     }
-    
+
 
 }
