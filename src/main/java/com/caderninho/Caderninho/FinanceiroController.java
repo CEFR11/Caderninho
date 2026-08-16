@@ -28,4 +28,9 @@ public class FinanceiroController {
         return ResponseEntity.ok(financeiroService.gerarFila(filtro));
     }
 
+    @GetMapping("/pagamentos")
+    public ResponseEntity<List<PagamentoDTO>> gerarPagamentos() {
+        return ResponseEntity.ok(financeiroService.gerarPagamentos());
+    }
+
 }

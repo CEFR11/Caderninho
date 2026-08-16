@@ -107,5 +107,10 @@ public class FinanceiroService {
         }
     }
 
+    public List<PagamentoDTO> gerarPagamentos() {
+        List<Lancamento> pagamentos = lancamentoRepository.findByTipo(TipoLancamento.PAGAMENTO);
+        return pagamentos.stream().map(l -> new PagamentoDTO(l.getCliente().getNome(), l.getItem(), l.getValorTotal(), l.getData())).toList();
+    }
+
 
 }

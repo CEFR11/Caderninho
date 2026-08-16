@@ -9,4 +9,6 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
 
     List<Lancamento> findByTipoAndDataBetween(TipoLancamento tipo, LocalDate inicio, LocalDate fim);
 
+    List<Lancamento> findByTipo(TipoLancamento tipo);
+
 }
