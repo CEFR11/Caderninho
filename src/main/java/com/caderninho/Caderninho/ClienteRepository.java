@@ -2,7 +2,10 @@ package com.caderninho.Caderninho;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-    public interface ClienteRepository extends JpaRepository<Cliente, Long> {
+import java.util.List;
 
-    }
+public interface ClienteRepository extends JpaRepository<Cliente, Long> {
+
+    List<Cliente> findByNomeContainingIgnoreCase(String nome);
+}
 

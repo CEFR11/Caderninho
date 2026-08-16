@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 
 
@@ -72,6 +73,13 @@ public class ClienteController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(clienteService.converterClienteDTO(clienteRegistro));
+
+    }
+
+    @GetMapping("/busca")
+    public ResponseEntity<List<ClienteDTO>> buscarPorNome(@RequestParam String nome) {
+
+        return ResponseEntity.ok(clienteRepository.findByNomeContainingIgnoreCase(nome).stream().map(clienteService::converterClienteDTO).toList());
 
     }
 }
