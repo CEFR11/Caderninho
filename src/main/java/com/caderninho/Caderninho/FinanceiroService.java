@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -110,6 +111,29 @@ public class FinanceiroService {
     public List<PagamentoDTO> gerarPagamentos() {
         List<Lancamento> pagamentos = lancamentoRepository.findByTipo(TipoLancamento.PAGAMENTO);
         return pagamentos.stream().map(l -> new PagamentoDTO(l.getCliente().getNome(), l.getItem(), l.getValorTotal(), l.getData())).toList();
+    }
+
+    public List<MesResumoDTO> gerarMensal() {
+
+        List<String> nomesDosMeses = List.of("JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ");
+
+        List<MesResumoDTO> mesResumo = new ArrayList<>();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDate mesReferencia = LocalDate.now().minusMonths(i);
+            LocalDate inicio = mesReferencia.withDayOfMonth(1);
+            LocalDate fim = inicio.withDayOfMonth(inicio.lengthOfMonth());
+            List<Lancamento> recebido = lancamentoRepository.findByTipoAndDataBetween(TipoLancamento.PAGAMENTO, inicio, fim);
+            List<Lancamento> fiado = lancamentoRepository.findByTipoAndDataBetween(TipoLancamento.FIADO, inicio, fim);
+            BigDecimal totalRecebido = recebido.stream().map(l -> l.getValorTotal()).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalFiado = fiado.stream().map(l -> l.getValorTotal()).reduce(BigDecimal.ZERO, BigDecimal::add);
+            String mes = nomesDosMeses.get(mesReferencia.getMonthValue() - 1);
+            mesResumo.add(new MesResumoDTO(mes, totalRecebido, totalFiado));
+
+
+
+        }
+        return mesResumo;
     }
 
 
