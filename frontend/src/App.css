@@ -131,3 +131,47 @@ body {
   text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px;
 }
 .estado.erro { color: var(--debt); }
+.empty { text-align: center; color: var(--muted); font-size: 12.5px; padding: 26px 0; }
+
+/* ---------- CHIPS (filtros) ---------- */
+.chips { display: flex; gap: 7px; margin-bottom: 12px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--line); background: var(--card); color: var(--muted);
+  font-family: 'Plus Jakarta Sans'; font-size: 11.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer;
+}
+.chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* ---------- TOTAL STRIP ---------- */
+.total-strip {
+  display: flex; justify-content: space-between; align-items: center; background: var(--ink); color: #fff;
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 14px;
+}
+.total-strip .l { font-size: 11.5px; color: #A5AAC4; }
+.total-strip .r { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 19px; letter-spacing: -.6px; }
+
+/* ---------- QUEUE (fila de prioridade) ---------- */
+.queue-item {
+  display: flex; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; padding: 13px 14px; margin-bottom: 9px; cursor: pointer; transition: transform .12s;
+  position: relative; overflow: hidden;
+}
+.queue-item:active { transform: scale(.985); }
+.queue-item .rank {
+  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 12px; color: var(--muted);
+  width: 20px; flex: 0 0 auto; text-align: center;
+}
+.queue-item .body { flex: 1; min-width: 0; }
+.queue-item .nm { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13.5px; letter-spacing: -.2px; }
+.queue-item .meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.queue-item .amt {
+  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14.5px; color: var(--debt); text-align: right; flex: 0 0 auto;
+}
+.urg { height: 3px; border-radius: 99px; margin-top: 7px; background: var(--line); overflow: hidden; }
+.urg span { display: block; height: 100%; border-radius: 99px; }
+.u-hi span { background: var(--debt); }
+.u-md span { background: var(--warn); }
+.u-lo span { background: var(--paid); }
+.flag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; letter-spacing: .3px; display: inline-block; }
+.flag.late { background: var(--debt-soft); color: var(--debt); }
+.flag.soon { background: var(--warn-soft); color: #9A6B0C; }
+.flag.ok { background: var(--paid-soft); color: var(--paid); }
