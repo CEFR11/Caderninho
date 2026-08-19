@@ -9,6 +9,18 @@ async function get(path) {
   return resposta.json()
 }
 
+async function post(path, corpo) {
+  const resposta = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(corpo),
+  })
+  if (!resposta.ok) {
+    throw new Error(`Erro ao enviar ${path}: ${resposta.status}`)
+  }
+  return resposta.json()
+}
+
 export const api = {
   resumo: () => get('/financeiro/resumo'),
   fila: (filtro = 'prioridade') => get(`/financeiro/fila?filtro=${filtro}`),
@@ -17,4 +29,5 @@ export const api = {
   clientes: () => get('/clientes'),
   buscarClientes: (nome) => get(`/clientes/busca?nome=${encodeURIComponent(nome)}`),
   cliente: (id) => get(`/clientes/${id}`),
+  registrarLancamento: (id, dados) => post(`/clientes/${id}/lancamentos`, dados),
 }

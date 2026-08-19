@@ -9,7 +9,7 @@ const FILTROS = [
     {id: 'recentes', label: 'Mais recentes'},
 ]
 
-export default function Fiados() {
+export default function Fiados({ refreshKey, aoAbrirFicha }) {
     const [filtro, setFiltro] = useState('prioridade')
     const [lista, setLista] = useState([])
     const [carregando, setCarregando] = useState(true)
@@ -21,7 +21,7 @@ export default function Fiados() {
             .then(setLista)
             .catch(() => setErro('Não foi possível carregar a fila. Confira se o backend está rodando.'))
             .finally(() => setCarregando(false))
-    }, [filtro])
+    }, [filtro, refreshKey])
 
     const total = lista.reduce((s, c) => s + Number(c.saldo), 0)
 
@@ -58,7 +58,7 @@ export default function Fiados() {
                         const largura = Math.min(100, Math.round((dias / 45) * 100))
 
                         return (
-                            <div className="queue-item" key={c.id}>
+                            <div className="queue-item" key={c.id} onClick={() => aoAbrirFicha(c.id)}>
                                 <div className="rank">{String(idx + 1).padStart(2, '0')}</div>
                                 <div className="body">
                                     <div className="nm">{c.nome}</div>

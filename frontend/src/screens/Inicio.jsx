@@ -1,25 +1,33 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { fmt } from '../format'
+import { fmt, dataRelativa } from '../format'
 
-export default function Inicio() {
+export default function Inicio({ refreshKey }) {
   const [resumo, setResumo] = useState(null)
   const [devedores, setDevedores] = useState(0)
   const [atrasados, setAtrasados] = useState([])
+  const [recentes, setRecentes] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
 
   useEffect(() => {
     async function carregar() {
       try {
-        const [dadosResumo, dadosFila, dadosAtrasados] = await Promise.all([
+        const [dadosResumo, dadosFila, dadosAtrasados, dadosClientes] = await Promise.all([
           api.resumo(),
           api.fila('prioridade'),
           api.fila('atrasados'),
+          api.clientes(),
         ])
         setResumo(dadosResumo)
         setDevedores(dadosFila.length)
         setAtrasados(dadosAtrasados)
+
+        const movimentos = dadosClientes
+          .flatMap((c) => c.lancamentos.map((l) => ({ ...l, nome: c.nome })))
+          .sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0))
+          .slice(0, 6)
+        setRecentes(movimentos)
       } catch (e) {
         setErro('Não foi possível carregar os dados. Confira se o backend está rodando em localhost:8080.')
       } finally {
@@ -27,7 +35,7 @@ export default function Inicio() {
       }
     }
     carregar()
-  }, [])
+  }, [refreshKey])
 
   if (carregando) return <div className="estado">Carregando…</div>
   if (erro) return <div className="estado erro">{erro}</div>
@@ -72,6 +80,23 @@ export default function Inicio() {
           </div>
         </div>
       )}
+
+      <div className="eyebrow">Movimento recente</div>
+      {recentes.length === 0
+        ? <div className="empty">Nenhum lançamento ainda.</div>
+        : recentes.map((r, idx) => {
+          const ehFiado = r.tipo === 'FIADO'
+          return (
+            <div className="ext" key={idx}>
+              <span className={`dot ${ehFiado ? 'debt' : 'paid'}`} />
+              <div className="b">
+                <div className="it">{r.nome}</div>
+                <div className="dt">{r.item} · {dataRelativa(r.data)}</div>
+              </div>
+              <div className={`vl ${ehFiado ? 'debt' : 'paid'}`}>{ehFiado ? '+' : '−'}{fmt(r.valorTotal)}</div>
+            </div>
+          )
+        })}
     </div>
   )
 }
