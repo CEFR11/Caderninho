@@ -5,9 +5,9 @@
   --ink: #14151D;
   --muted: #7B819A;
   --line: #E7E9F0;
-  --primary: #4B2EE8;
-  --primary-2: #7C5CFF;
-  --primary-soft: #EEE9FF;
+  --primary: #1A7EF5;
+  --primary-2: #5CA8FF;
+  --primary-soft: #E7F1FF;
   --debt: #E5484D;
   --debt-soft: #FDECEC;
   --paid: #0E9F6E;
@@ -50,9 +50,7 @@ body {
 .brand { display: flex; align-items: center; gap: 9px; }
 .brand .mark {
   width: 30px; height: 30px; border-radius: 9px;
-  background: linear-gradient(140deg, var(--primary), var(--primary-2));
-  display: flex; align-items: center; justify-content: center; color: #fff;
-  font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 15px;
+  object-fit: cover; display: block;
 }
 .brand .name { font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 17px; letter-spacing: -.3px; }
 .month-chip {
@@ -74,23 +72,23 @@ body {
 
 /* ---------- HERO ---------- */
 .hero {
-  background: linear-gradient(150deg, #3A22C7, #6C4BFF 55%, #8B6BFF);
+  background: linear-gradient(150deg, #0F4FC4, #1A7EF5 55%, #5CA8FF);
   border-radius: 22px; padding: 20px; color: #fff; position: relative; overflow: hidden;
-  box-shadow: 0 14px 30px -12px rgba(75, 46, 232, .65);
+  box-shadow: 0 14px 30px -12px rgba(26, 126, 245, .65);
 }
 .hero:after {
   content: ''; position: absolute; right: -40px; top: -60px; width: 170px; height: 170px;
   border-radius: 50%; background: rgba(255, 255, 255, .10);
 }
-.hero .lbl { font-size: 11.5px; font-weight: 500; color: #D6CCFF; letter-spacing: .3px; }
+.hero .lbl { font-size: 11.5px; font-weight: 500; color: #CFE4FF; letter-spacing: .3px; }
 .hero .big {
   font-family: 'JetBrains Mono'; font-weight: 700; font-size: 36px; letter-spacing: -1.5px;
   margin-top: 3px; line-height: 1;
 }
-.hero .sub { font-size: 11.5px; color: #CFC3FF; margin-top: 7px; }
+.hero .sub { font-size: 11.5px; color: #C7DFFF; margin-top: 7px; }
 .bar { height: 7px; border-radius: 99px; background: rgba(255, 255, 255, .22); margin-top: 14px; overflow: hidden; display: flex; }
 .bar span { display: block; height: 100%; background: #5CE9B0; border-radius: 99px; transition: width .3s; }
-.bar-legend { display: flex; justify-content: space-between; font-size: 10.5px; color: #D6CCFF; margin-top: 7px; }
+.bar-legend { display: flex; justify-content: space-between; font-size: 10.5px; color: #CFE4FF; margin-top: 7px; }
 
 /* ---------- QUICK GRID ---------- */
 .quickgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
@@ -183,6 +181,19 @@ body {
 }
 .search input { border: none; outline: none; flex: 1; font-family: 'Inter'; font-size: 13.5px; background: none; color: var(--ink); }
 .search input::placeholder { color: #A9AEC2; }
+.form-erro { font-size: 11.5px; color: var(--debt); margin: -6px 0 10px 3px; }
+
+.add-cliente {
+  width: 100%; display: flex; align-items: center; gap: 10px; background: var(--primary-soft);
+  border: 1px dashed var(--primary); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+  cursor: pointer; font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13px; color: var(--primary);
+  transition: transform .12s;
+}
+.add-cliente:active { transform: scale(.985); }
+.add-cliente-ic {
+  width: 26px; height: 26px; border-radius: 8px; background: var(--primary); color: #fff; font-size: 16px;
+  font-weight: 800; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+}
 
 /* ---------- CLIENTES (lista) ---------- */
 .letter {
@@ -265,7 +276,7 @@ body {
 .bstack { width: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; height: 100%; }
 .bseg { width: 100%; border-radius: 4px; }
 .bseg.p { background: var(--paid); }
-.bseg.d { background: #DAD8F5; }
+.bseg.d { background: #CFE0FA; }
 .bcol .lb { font-size: 9.5px; color: var(--muted); font-family: 'JetBrains Mono'; }
 .legend { display: flex; gap: 14px; margin-top: 12px; font-size: 11px; color: var(--muted); }
 .legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; margin-right: 5px; }
@@ -282,7 +293,7 @@ body {
 .fab {
   position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%); width: 56px; height: 56px; border-radius: 19px;
   border: none; cursor: pointer; background: linear-gradient(140deg, var(--primary), var(--primary-2)); color: #fff;
-  font-size: 26px; box-shadow: 0 10px 22px -6px rgba(75, 46, 232, .7); display: flex; align-items: center; justify-content: center;
+  font-size: 26px; box-shadow: 0 10px 22px -6px rgba(26, 126, 245, .7); display: flex; align-items: center; justify-content: center;
   transition: transform .12s; z-index: 15;
 }
 .fab:active { transform: translateX(-50%) scale(.93); }
