@@ -8,7 +8,7 @@ const FILTROS = [
   { id: 'quites', label: 'Em dia' },
 ]
 
-export default function Clientes({ refreshKey, aoAbrirFicha }) {
+export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente }) {
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('todos')
   const [clientes, setClientes] = useState([])
@@ -38,6 +38,11 @@ export default function Clientes({ refreshKey, aoAbrirFicha }) {
       <div className="search">
         <input placeholder="Buscar por nome..." value={busca} onChange={(e) => setBusca(e.target.value)} />
       </div>
+
+      <button className="add-cliente" onClick={aoAbrirNovoCliente}>
+        <span className="add-cliente-ic">+</span>
+        Cadastrar novo cliente
+      </button>
 
       <div className="chips">
         {FILTROS.map((f) => (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import NavBar from './components/NavBar'
 import LancamentoModal from './components/LancamentoModal'
+import NovoClienteModal from './components/NovoClienteModal'
 import Inicio from './screens/Inicio'
 import Fiados from './screens/Fiados'
 import Clientes from './screens/Clientes'
@@ -16,6 +17,7 @@ export default function App() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [clientes, setClientes] = useState([])
   const [modal, setModal] = useState({ aberto: false, clienteId: null, tipo: 'fiado' })
+  const [novoClienteAberto, setNovoClienteAberto] = useState(false)
   const [toast, setToast] = useState('')
 
   useEffect(() => {
@@ -43,14 +45,26 @@ export default function App() {
   async function registrarLancamento(clienteId, dados) {
     await api.registrarLancamento(clienteId, dados)
     setRefreshKey((k) => k + 1)
-    fecharLancamento()
     mostrarToast(dados.tipo === 'FIADO' ? 'Fiado registrado' : 'Pagamento registrado')
+  }
+
+  async function cadastrarCliente(dados) {
+    const novoCliente = await api.cadastrarCliente(dados)
+    setRefreshKey((k) => k + 1)
+    mostrarToast('Cliente cadastrado')
+    return novoCliente
+  }
+
+  async function cadastrarClienteDaTelaClientes(dados) {
+    const novoCliente = await cadastrarCliente(dados)
+    setNovoClienteAberto(false)
+    abrirFicha(novoCliente.id)
   }
 
   const TELAS = {
     inicio: <Inicio refreshKey={refreshKey} />,
     fiados: <Fiados refreshKey={refreshKey} aoAbrirFicha={abrirFicha} />,
-    clientes: <Clientes refreshKey={refreshKey} aoAbrirFicha={abrirFicha} />,
+    clientes: <Clientes refreshKey={refreshKey} aoAbrirFicha={abrirFicha} aoAbrirNovoCliente={() => setNovoClienteAberto(true)} />,
     financeiro: <Financeiro refreshKey={refreshKey} />,
     ficha: (
       <Ficha
@@ -58,6 +72,7 @@ export default function App() {
         refreshKey={refreshKey}
         aoVoltar={() => setTela('clientes')}
         aoAbrirLancamento={abrirLancamento}
+        aoMostrarToast={mostrarToast}
       />
     ),
   }
@@ -68,7 +83,7 @@ export default function App() {
     <div className="app-shell">
       <div className="topbar">
         <div className="brand">
-          <div className="mark">C</div>
+          <img className="mark" src="/icon-192.png" alt="" />
           <div className="name">Caderninho</div>
         </div>
         <div className="month-chip">{mesEAnoAtual()}</div>
@@ -88,6 +103,14 @@ export default function App() {
         tipoInicial={modal.tipo}
         aoFechar={fecharLancamento}
         aoRegistrar={registrarLancamento}
+        aoCadastrarCliente={cadastrarCliente}
+        aoMostrarToast={mostrarToast}
+      />
+
+      <NovoClienteModal
+        aberto={novoClienteAberto}
+        aoFechar={() => setNovoClienteAberto(false)}
+        aoCadastrar={cadastrarClienteDaTelaClientes}
       />
     </div>
   )

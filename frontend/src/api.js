@@ -1,5 +1,6 @@
-// Endereço do backend Spring Boot. Ajuste aqui se rodar em outra porta/host.
-const BASE_URL = 'http://localhost:8080'
+// Endereço do backend Spring Boot. Em dev usa localhost; em outro dispositivo
+// (celular, outra máquina), defina VITE_API_URL no arquivo .env do frontend.
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 async function get(path) {
   const resposta = await fetch(`${BASE_URL}${path}`)
@@ -16,7 +17,8 @@ async function post(path, corpo) {
     body: JSON.stringify(corpo),
   })
   if (!resposta.ok) {
-    throw new Error(`Erro ao enviar ${path}: ${resposta.status}`)
+    const texto = await resposta.text().catch(() => '')
+    throw new Error(texto || `Erro ao enviar ${path}: ${resposta.status}`)
   }
   return resposta.json()
 }
@@ -29,5 +31,6 @@ export const api = {
   clientes: () => get('/clientes'),
   buscarClientes: (nome) => get(`/clientes/busca?nome=${encodeURIComponent(nome)}`),
   cliente: (id) => get(`/clientes/${id}`),
+  cadastrarCliente: (dados) => post('/clientes', dados),
   registrarLancamento: (id, dados) => post(`/clientes/${id}/lancamentos`, dados),
 }
