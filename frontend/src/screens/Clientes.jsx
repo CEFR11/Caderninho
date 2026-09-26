@@ -31,7 +31,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
   let lista = clientes.filter((c) => c.nome.toLowerCase().includes(busca.toLowerCase())
     || (digitosBusca.length >= 3 && soDigitos(c.telefone).includes(digitosBusca)))
   if (filtro === 'devendo') lista = lista.filter((c) => Number(c.saldoDevedor) > 0)
-  if (filtro === 'quites') lista = lista.filter((c) => Number(c.saldoDevedor) === 0)
+  if (filtro === 'quites') lista = lista.filter((c) => Number(c.saldoDevedor) <= 0)
   lista = [...lista].sort((a, b) => a.nome.localeCompare(b.nome))
 
   let letraAtual = ''
@@ -77,7 +77,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
                   <div className="sub">{c.telefone}</div>
                 </div>
                 <div className="right">
-                  <div className={`sal ${saldo > 0 ? 'dev' : 'zero'}`}>{saldo > 0 ? fmt(saldo) : 'quite'}</div>
+                  <div className={`sal ${saldo > 0 ? 'dev' : 'zero'}`}>{saldo > 0 ? fmt(saldo) : saldo < 0 ? `crédito ${fmt(-saldo)}` : 'quite'}</div>
                 </div>
               </div>
             </div>

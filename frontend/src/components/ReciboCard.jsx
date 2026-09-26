@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import { fmt, dataCurta } from '../format'
+import { fmt, dataCurta, rotuloSaldo, valorSaldo } from '../format'
 
 function LinhaRotulo({ rotulo, valor, destaque }) {
   return (
@@ -79,10 +79,10 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
 
         <div style={{ height: 1, background: '#E7E9F0', margin: '18px 0' }} />
         <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: '#7B819A' }}>
-          Saldo devedor atual
+          {rotuloSaldo(dados.saldo)} atual
         </div>
         <div style={{ fontFamily: "'JetBrains Mono'", fontWeight: 700, fontSize: 26, color: corSaldo, marginTop: 3 }}>
-          {fmt(dados.saldo)}
+          {valorSaldo(dados.saldo)}
         </div>
 
         <div style={{ fontSize: 10.5, color: '#A9AEC2', marginTop: 20, textAlign: 'center' }}>

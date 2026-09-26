@@ -1,4 +1,4 @@
-import { fmt, dataCurta } from './format'
+import { fmt, dataCurta, rotuloSaldo, valorSaldo } from './format'
 
 export function linkWhatsApp(telefone, mensagem) {
   const digitos = telefone.replace(/\D/g, '')
@@ -8,13 +8,13 @@ export function linkWhatsApp(telefone, mensagem) {
 
 export function mensagemRecibo({ nome, tipo, item, valor, data, saldoDepois }) {
   return [
-    `Olá, ${nome}! Aqui está o registro da sua compra no Caderninho:`,
+    `Olá, ${nome}! Aqui está o registro ${tipo === 'fiado' ? 'da sua compra' : 'do seu pagamento'} no Caderninho:`,
     '',
     `Data: ${dataCurta(data)}`,
     `Item: ${item}`,
     `${tipo === 'fiado' ? 'Fiado' : 'Pagamento'}: ${fmt(valor)}`,
     '',
-    `Saldo devedor atual: ${fmt(saldoDepois)}`,
+    `${rotuloSaldo(saldoDepois)} atual: ${valorSaldo(saldoDepois)}`,
   ].join('\n')
 }
 
@@ -31,6 +31,6 @@ export function mensagemExtrato(cliente) {
     })
   }
 
-  linhas.push('', `Saldo devedor atual: ${fmt(cliente.saldoDevedor)}`)
+  linhas.push('', `${rotuloSaldo(cliente.saldoDevedor)} atual: ${valorSaldo(cliente.saldoDevedor)}`)
   return linhas.join('\n')
 }

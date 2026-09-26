@@ -102,3 +102,22 @@ export function normalizarNome(nome) {
 export function soDigitos(valor) {
   return (valor || '').replace(/\D/g, '')
 }
+
+// Saldo negativo acontece quando o cliente paga a mais: vira crédito, não "dívida negativa".
+export function rotuloSaldo(saldo) {
+  return Number(saldo) < 0 ? 'Crédito do cliente' : 'Saldo devedor'
+}
+
+export function valorSaldo(saldo) {
+  return fmt(Math.abs(Number(saldo)))
+}
+
+// Valor digitado no teclado do modal ("12,5") para número.
+export function valorDigitado(texto) {
+  return parseFloat((texto || '0').replace(',', '.')) || 0
+}
+
+// Número para o formato do teclado do modal (255.5 -> "255,50").
+export function paraDigitado(numero) {
+  return Number(numero).toFixed(2).replace('.', ',')
+}

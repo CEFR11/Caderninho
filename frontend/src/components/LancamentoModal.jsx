@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora } from '../format'
+import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora, valorDigitado, paraDigitado } from '../format'
 import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ClienteModal from './ClienteModal'
@@ -13,6 +13,9 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const [tipo, setTipo] = useState('fiado')
   const [valor, setValor] = useState('')
   const [descricao, setDescricao] = useState('')
+  const [data, setData] = useState(dataHojeISO())
+  const [erroSalvar, setErroSalvar] = useState(null)
+  const [confirmarExcedente, setConfirmarExcedente] = useState(false)
   const [pickerAberto, setPickerAberto] = useState(false)
   const [buscaPicker, setBuscaPicker] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -31,6 +34,9 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     setTipo(tipoInicial || 'fiado')
     setValor('')
     setDescricao('')
+    setData(dataHojeISO())
+    setErroSalvar(null)
+    setConfirmarExcedente(false)
     setPickerAberto(!clienteInicialId)
     setBuscaPicker('')
     setRecemCriado(null)
@@ -65,17 +71,25 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   }
 
   function tecla(k) {
+    setConfirmarExcedente(false)
     if (k === '⌫') setValor((v) => v.slice(0, -1))
     else if (k === ',') setValor((v) => (v.includes(',') ? v : v + ','))
     else setValor((v) => (v.replace(',', '').length < 7 ? v + k : v))
   }
 
-  async function salvar() {
-    const numero = parseFloat((valor || '0').replace(',', '.')) || 0
+  const saldoAtual = clienteAtual ? Number(clienteAtual.saldoDevedor) : 0
+
+  async function salvar(valorForcado = null) {
+    const numero = valorForcado ?? valorDigitado(valor)
     if (numero <= 0 || !clienteAtual || salvando) return
+    // Pagamento maior que a dívida: pergunta antes, em vez de deixar o saldo negativo sem querer.
+    if (tipo === 'pagamento' && numero > saldoAtual && valorForcado === null) {
+      setConfirmarExcedente(true)
+      return
+    }
     setSalvando(true)
+    setErroSalvar(null)
     try {
-      const data = dataHojeISO()
       const item = descricao || (tipo === 'fiado' ? 'Fiado' : 'Pagamento')
       const clienteAtualizado = await aoRegistrar(clienteAtual.id, {
         tipo: tipo === 'fiado' ? 'FIADO' : 'PAGAMENTO',
@@ -83,8 +97,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         valorTotal: numero,
         data,
       })
-      const saldoAntes = Number(clienteAtual.saldoDevedor)
-      const saldoDepois = tipo === 'fiado' ? saldoAntes + numero : Math.max(0, saldoAntes - numero)
+      const saldoDepois = Number(clienteAtualizado.saldoDevedor)
       // O lançamento recém-criado é o de maior id na lista devolvida pelo backend.
       const lancamentoId = Math.max(...clienteAtualizado.lancamentos.map((l) => l.id))
       setRecibo({
@@ -98,6 +111,8 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         saldoDepois,
         emitidoEm: dataHoraAgora(),
       })
+    } catch {
+      setErroSalvar('Não salvou. Confira a internet e tente de novo.')
     } finally {
       setSalvando(false)
     }
@@ -121,7 +136,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     if (e.key === 'Escape') { aoFechar(); return }
     if (recibo || pickerAberto) return
     const digitandoNoCampo = e.target instanceof HTMLInputElement
-    if (e.key === 'Enter') { e.preventDefault(); salvar(); return }
+    if (e.key === 'Enter') { e.preventDefault(); if (!confirmarExcedente) salvar(); return }
     if (digitandoNoCampo) return
     if (/^[0-9]$/.test(e.key)) tecla(e.key)
     else if (e.key === ',' || e.key === '.') tecla(',')
@@ -264,26 +279,51 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         {!pickerAberto && (
           <div className="lanc-body">
             <div className="seg">
-              <button className={tipo === 'fiado' ? 'on-d' : ''} onClick={() => setTipo('fiado')}>FIADO</button>
+              <button className={tipo === 'fiado' ? 'on-d' : ''} onClick={() => { setTipo('fiado'); setConfirmarExcedente(false) }}>FIADO</button>
               <button className={tipo === 'pagamento' ? 'on-p' : ''} onClick={() => setTipo('pagamento')}>PAGAMENTO</button>
             </div>
             <div className="amt-d">{valor ? `R$ ${valor}` : 'R$ 0,00'}</div>
+            {tipo === 'pagamento' && saldoAtual > 0 && (
+              <button className="pagou-tudo" onClick={() => { setValor(paraDigitado(saldoAtual)); setConfirmarExcedente(false) }}>
+                Pagou tudo · {fmt(saldoAtual)}
+              </button>
+            )}
             <div className="desc">
               <input
-                placeholder="Item (ex: pão, leite e café)"
+                placeholder={tipo === 'fiado' ? 'O que levou? (ex: pão, leite e café)' : 'Como pagou? (Pix, dinheiro…)'}
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
               />
               <MicButton aoOuvir={(texto) => setDescricao(texto.charAt(0).toUpperCase() + texto.slice(1))} />
             </div>
+            <div className="data-linha">
+              <span>Quando foi?</span>
+              <input type="date" value={data} max={dataHojeISO()} onChange={(e) => setData(e.target.value || dataHojeISO())} />
+            </div>
             <div className="pad">
               {TECLAS.map((k) => <button key={k} onClick={() => tecla(k)}>{k}</button>)}
             </div>
+            {confirmarExcedente && (
+              <div className="aviso-excedente">
+                <div>
+                  {clienteAtual.nome} deve só <b>{fmt(Math.max(0, saldoAtual))}</b> e você digitou <b>{fmt(valorDigitado(valor))}</b>.
+                </div>
+                {saldoAtual > 0 && (
+                  <button className="cf" style={{ background: 'var(--paid)' }} onClick={() => { setValor(paraDigitado(saldoAtual)); salvar(saldoAtual) }}>
+                    Registrar só {fmt(saldoAtual)} (quita a conta)
+                  </button>
+                )}
+                <button className="cf secundario" onClick={() => salvar(valorDigitado(valor))}>
+                  Registrar {fmt(valorDigitado(valor))} e deixar {fmt(valorDigitado(valor) - Math.max(0, saldoAtual))} de crédito
+                </button>
+              </div>
+            )}
+            {erroSalvar && <div className="form-erro" style={{ margin: '0 3px 10px' }}>{erroSalvar}</div>}
             <button
               className="cf"
               style={{ background: !clienteAtual ? 'var(--muted)' : tipo === 'fiado' ? 'var(--debt)' : 'var(--paid)' }}
-              onClick={clienteAtual ? salvar : () => setPickerAberto(true)}
-              disabled={salvando}
+              onClick={clienteAtual ? () => salvar() : () => setPickerAberto(true)}
+              disabled={salvando || confirmarExcedente}
             >
               {salvando ? 'Salvando…' : !clienteAtual ? 'Escolha o cliente primeiro' : tipo === 'fiado' ? 'Registrar fiado' : 'Registrar pagamento'}
             </button>

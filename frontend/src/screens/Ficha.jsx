@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import { fmt, iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta } from '../format'
+import { fmt, iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta, rotuloSaldo, valorSaldo } from '../format'
 import { linkWhatsApp, mensagemExtrato } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
@@ -52,9 +52,9 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
         <div className="av" style={{ background: corAvatar(cliente.id) }}>{iniciais(cliente.nome)}</div>
         <div className="nm">{cliente.nome}</div>
         <div className="tel">{cliente.telefone}</div>
-        <div className="ficha-sal">
-          <div className="l">Saldo devedor</div>
-          <div className="v">{fmt(saldo)}</div>
+        <div className={`ficha-sal ${saldo > 0 ? '' : 'ok'}`}>
+          <div className="l">{rotuloSaldo(saldo)}</div>
+          <div className="v">{valorSaldo(saldo)}</div>
           {cliente.devendoDesde && <div className="desde">deve desde {dataCurta(cliente.devendoDesde)}</div>}
         </div>
         <div className="acts">
