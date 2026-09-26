@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { formatarTelefone, normalizarNome, soDigitos } from '../format'
+import { formatarTelefone, normalizarNome, soDigitos, digitosNacionais, telefoneValido, telefoneComPais } from '../format'
 
 // Cadastro e edição de cliente. Antes de salvar, avisa se já existe alguém com o mesmo
 // nome ou telefone — no balcão é fácil cadastrar a mesma pessoa duas vezes.
@@ -29,16 +29,20 @@ export default function ClienteModal({ aberto, clienteInicial = null, clientes =
 
   function acharParecido() {
     const nomeNormal = normalizarNome(nome)
-    const digitos = soDigitos(telefone)
+    const digitos = digitosNacionais(telefone)
     return clientes.find((c) => c.id !== clienteInicial?.id && (
       normalizarNome(c.nome) === nomeNormal
-      || (digitos.length >= 8 && soDigitos(c.telefone) === digitos)
+      || (digitos.length >= 8 && digitosNacionais(c.telefone) === digitos)
     ))
   }
 
   async function salvar(ignorarParecido = false) {
     if (!nome.trim() || !telefone.trim()) {
       setErro('Preencha nome e telefone.')
+      return
+    }
+    if (!telefoneValido(telefone)) {
+      setErro('Telefone incompleto: coloque o DDD e o número, ex: (85) 99999-0000.')
       return
     }
     if (!ignorarParecido) {
@@ -48,12 +52,21 @@ export default function ClienteModal({ aberto, clienteInicial = null, clientes =
     setSalvando(true)
     setErro('')
     try {
-      await aoSalvar({ nome: nome.trim(), telefone: telefone.trim(), diaPagamento: diaPagamento ? Number(diaPagamento) : null })
+      await aoSalvar({ nome: nome.trim(), telefone: telefoneComPais(telefone), diaPagamento: diaPagamento ? Number(diaPagamento) : null })
     } catch (e) {
       setErro(e.message || 'Não foi possível salvar o cliente.')
     } finally {
       setSalvando(false)
     }
+  }
+
+  // Apagar em cima do "-" ou do ")" não muda os dígitos; aí apaga o dígito anterior,
+  // senão a máscara recoloca o sinal e parece que o apagar não funciona.
+  function digitarTelefone(novo) {
+    const apagouSoOSinal = novo.length < telefone.length && soDigitos(novo) === soDigitos(telefone)
+    setTelefone(formatarTelefone(apagouSoOSinal ? soDigitos(novo).slice(0, -1) : novo))
+    setParecido(null)
+    setErro('')
   }
 
   async function excluir() {
@@ -86,11 +99,13 @@ export default function ClienteModal({ aberto, clienteInicial = null, clientes =
           />
         </div>
         <div className="desc">
+          <span className="campo-prefixo">+55</span>
           <input
-            placeholder="Telefone"
+            placeholder="(85) 99999-0000"
             value={telefone}
-            onChange={(e) => { setTelefone(formatarTelefone(e.target.value)); setParecido(null) }}
+            onChange={(e) => digitarTelefone(e.target.value)}
             inputMode="tel"
+            autoComplete="tel-national"
           />
         </div>
 
@@ -110,7 +125,7 @@ export default function ClienteModal({ aberto, clienteInicial = null, clientes =
           ? (
             <div className="aviso-duplicado">
               <div className="tx">
-                Já existe <b>{parecido.nome}</b> · {parecido.telefone}. É a mesma pessoa?
+                Já existe <b>{parecido.nome}</b> · {telefoneComPais(parecido.telefone)}. É a mesma pessoa?
               </div>
               {!editando && aoUsarExistente && (
                 <button className="cf" style={{ background: 'var(--primary)' }} onClick={() => aoUsarExistente(parecido)}>

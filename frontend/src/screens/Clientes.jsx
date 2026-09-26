@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { fmt, iniciais, corAvatar, soDigitos } from '../format'
+import { fmt, iniciais, corAvatar, soDigitos, digitosNacionais, telefoneComPais } from '../format'
 import MicButton from '../components/MicButton'
 
 const FILTROS = [
@@ -29,7 +29,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
 
   const digitosBusca = soDigitos(busca)
   let lista = clientes.filter((c) => c.nome.toLowerCase().includes(busca.toLowerCase())
-    || (digitosBusca.length >= 3 && soDigitos(c.telefone).includes(digitosBusca)))
+    || (digitosBusca.length >= 3 && digitosNacionais(c.telefone).includes(digitosNacionais(busca))))
   if (filtro === 'devendo') lista = lista.filter((c) => Number(c.saldoDevedor) > 0)
   if (filtro === 'quites') lista = lista.filter((c) => Number(c.saldoDevedor) <= 0)
   lista = [...lista].sort((a, b) => a.nome.localeCompare(b.nome))
@@ -74,7 +74,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
                 <div className="av" style={{ background: corAvatar(c.id) }}>{iniciais(c.nome)}</div>
                 <div className="info">
                   <div className="nm">{c.nome}</div>
-                  <div className="sub">{c.telefone}</div>
+                  <div className="sub">{telefoneComPais(c.telefone)}</div>
                 </div>
                 <div className="right">
                   <div className={`sal ${saldo > 0 ? 'dev' : 'zero'}`}>{saldo > 0 ? fmt(saldo) : saldo < 0 ? `crédito ${fmt(-saldo)}` : 'quite'}</div>

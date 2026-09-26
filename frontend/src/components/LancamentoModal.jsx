@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta, somarMeses, dividirEmParcelas, nomeDaParcela } from '../format'
+import { fmt, iniciais, corAvatar, dataHojeISO, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta, somarMeses, dividirEmParcelas, nomeDaParcela, telefoneComPais } from '../format'
 import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
-import { gerarEcompartilharImagem } from '../reciboImagem'
 import ClienteModal from './ClienteModal'
-import ReciboCard from './ReciboCard'
 import MicButton from './MicButton'
 
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫']
@@ -20,6 +18,8 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const [pecas, setPecas] = useState([])
   // Em quantas vezes o total do fiado vai ser pago (1 = à vista, sem parcelar).
   const [parcelas, setParcelas] = useState(1)
+  // Fiado em dois passos: 'pecas' (digitar as peças) e 'fechar' (total, datas e parcelas).
+  const [etapa, setEtapa] = useState('pecas')
   // Peça que o pagamento vai abater (vem do "Pagou esta" da ficha; pode ser desligada).
   const [alvo, setAlvo] = useState(null)
   const [erroSalvar, setErroSalvar] = useState(null)
@@ -30,9 +30,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const [novoClienteAberto, setNovoClienteAberto] = useState(false)
   const [recemCriado, setRecemCriado] = useState(null)
   const [recibo, setRecibo] = useState(null)
-  const [compartilhando, setCompartilhando] = useState(false)
   const [desfazendo, setDesfazendo] = useState(false)
-  const reciboRef = useRef(null)
   const aoTeclarRef = useRef(null)
 
   useEffect(() => {
@@ -44,6 +42,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     setAlvo(fiadoAlvo ?? null)
     setPecas([])
     setParcelas(1)
+    setEtapa('pecas')
     setDescricao('')
     setData(dataHojeISO())
     setVencimento('')
@@ -96,13 +95,34 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
 
   // "3x de R$ 60,00 · 26/10, 26/11 e 26/12" (ou "1ª de R$ 33,34 e 2 de R$ 33,33 · …" quando não divide certinho).
   function resumoParcelas() {
-    const valores = dividirEmParcelas(totalDoFiado, parcelas)
+    const valores = dividirEmParcelas(totalPecas, parcelas)
     const primeiro = vencimento || vencimentoPadrao(data, clienteAtual.diaPagamento)
     const datas = valores.map((_, k) => dataCurta(somarMeses(primeiro, k)))
     const quanto = valores[0] === valores[1]
       ? `${parcelas}x de ${fmt(valores[0])}`
       : `1ª de ${fmt(valores[0])} e ${parcelas - 1} de ${fmt(valores[1])}`
     return `${quanto} · ${datas.slice(0, -1).join(', ')} e ${datas[datas.length - 1]}`
+  }
+
+  const fechandoFiado = tipo === 'fiado' && etapa === 'fechar' && clienteAtual
+
+  // OK do primeiro passo: a peça que está sendo digitada entra na lista e abre o fechamento.
+  function irParaFechar() {
+    if (totalDoFiado <= 0) return
+    const numero = valorDigitado(valor)
+    if (numero > 0) {
+      setPecas((lista) => [...lista, { item: descricao.trim() || (lista.length ? `Peça ${lista.length + 1}` : 'Fiado'), valor: numero }])
+      setValor('')
+      setDescricao('')
+    }
+    setEtapa('fechar')
+  }
+
+  // Sem nenhuma peça, não há o que fechar: volta para o primeiro passo.
+  function tirarPeca(idx) {
+    const restantes = pecas.filter((_, i) => i !== idx)
+    setPecas(restantes)
+    if (restantes.length === 0) setEtapa('pecas')
   }
 
   function adicionarPeca() {
@@ -166,7 +186,6 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         data,
         vencimento: tipo === 'fiado' && !parcelado ? primeiroVencimento : null,
         saldoDepois,
-        emitidoEm: dataHoraAgora(),
       })
     } catch {
       setErroSalvar('Não salvou. Confira a internet e tente de novo.')
@@ -175,25 +194,19 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     }
   }
 
-  async function compartilharImagemRecibo() {
-    if (!reciboRef.current || compartilhando) return
-    setCompartilhando(true)
-    try {
-      const resultado = await gerarEcompartilharImagem(reciboRef.current, `recibo-${recibo.nome}.png`, mensagemRecibo(recibo))
-      if (resultado === 'baixado') aoMostrarToast('Imagem baixada — anexe no WhatsApp')
-    } catch (e) {
-      if (e.name !== 'AbortError') aoMostrarToast('Não foi possível gerar a imagem do recibo')
-    } finally {
-      setCompartilhando(false)
-    }
-  }
-
   aoTeclarRef.current = (e) => {
     if (novoClienteAberto) return
     if (e.key === 'Escape') { aoFechar(); return }
     if (recibo || pickerAberto) return
     const digitandoNoCampo = e.target instanceof HTMLInputElement
-    if (e.key === 'Enter') { e.preventDefault(); if (!confirmarExcedente) salvar(); return }
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (confirmarExcedente) return
+      if (tipo === 'fiado' && !fechandoFiado) irParaFechar()
+      else salvar()
+      return
+    }
+    if (fechandoFiado) return
     if (digitandoNoCampo) return
     if (/^[0-9]$/.test(e.key)) tecla(e.key)
     else if (e.key === ',' || e.key === '.') tecla(',')
@@ -237,22 +250,14 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 {recibo.nome} · {recibo.item} · {fmt(recibo.valor)}{recibo.parcelas ? ` em ${recibo.parcelas.length}x` : ''}
               </div>
             </div>
-            <button
-              className="cf"
-              style={{ background: 'var(--primary)', boxSizing: 'border-box' }}
-              onClick={compartilharImagemRecibo}
-              disabled={compartilhando}
-            >
-              {compartilhando ? 'Gerando imagem…' : 'Compartilhar recibo (imagem)'}
-            </button>
             <a
               className="cf"
-              style={{ background: 'var(--paid)', display: 'block', textAlign: 'center', textDecoration: 'none', marginTop: 8, boxSizing: 'border-box' }}
+              style={{ background: 'var(--paid)', display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}
               href={linkWhatsApp(recibo.telefone, mensagemRecibo(recibo))}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Ou enviar só como texto
+              Enviar comprovante pelo WhatsApp
             </a>
             <button
               className="cf"
@@ -264,28 +269,6 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
             <button className="apagar" onClick={desfazer} disabled={desfazendo}>
               {desfazendo ? 'Desfazendo…' : 'Anotei errado — desfazer'}
             </button>
-          </div>
-        )}
-
-        {recibo && (
-          <div style={{ position: 'fixed', top: 0, left: -9999, zIndex: -1 }}>
-            <ReciboCard
-              ref={reciboRef}
-              dados={{
-                modo: 'transacao',
-                nome: recibo.nome,
-                data: recibo.data,
-                item: recibo.item,
-                itens: recibo.itens,
-                parcelas: recibo.parcelas,
-                pecaPaga: recibo.pecaPaga,
-                tipoLancamento: recibo.tipo,
-                valor: recibo.valor,
-                vencimento: recibo.vencimento,
-                saldo: recibo.saldoDepois,
-                emitidoEm: recibo.emitidoEm,
-              }}
-            />
           </div>
         )}
 
@@ -329,7 +312,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                     </span>
                     <div className="info">
                       <div className="nm">{c.nome}</div>
-                      <div className="sub">{Number(c.saldoDevedor) > 0 ? `deve ${fmt(c.saldoDevedor)}` : 'em dia'} · {c.telefone}</div>
+                      <div className="sub">{Number(c.saldoDevedor) > 0 ? `deve ${fmt(c.saldoDevedor)}` : 'em dia'} · {telefoneComPais(c.telefone)}</div>
                     </div>
                   </div>
                 ))}
@@ -337,7 +320,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
           </div>
         )}
 
-        {!pickerAberto && (
+        {!pickerAberto && !fechandoFiado && (
           <div className="lanc-body">
             <div className="seg">
               <button className={tipo === 'fiado' ? 'on-d' : ''} onClick={() => { setTipo('fiado'); setConfirmarExcedente(false); setAlvo(null) }}>FIADO</button>
@@ -356,10 +339,10 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                   <div className="peca" key={idx}>
                     <span className="n">{p.item}</span>
                     <span className="v">{fmt(p.valor)}</span>
-                    <button className="limpar-data" onClick={() => setPecas((lista) => lista.filter((_, i) => i !== idx))} aria-label="Tirar peça">✕</button>
+                    <button className="limpar-data" onClick={() => tirarPeca(idx)} aria-label="Tirar peça">✕</button>
                   </div>
                 ))}
-                <div className="peca-total">Até agora: {fmt(totalPecas)} · digite a próxima peça ou anote</div>
+                <div className="peca-total">Até agora: {fmt(totalPecas)} · digite a próxima peça ou toque em OK</div>
               </div>
             )}
             {tipo === 'pagamento' && alvo && (
@@ -387,39 +370,11 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 + outra peça
               </button>
             )}
-            <div className="data-linha">
-              <span>Quando foi?</span>
-              <input type="date" value={data} max={dataHojeISO()} onChange={(e) => setData(e.target.value || dataHojeISO())} />
-            </div>
-            {tipo === 'fiado' && (
-              <>
-                <div className="data-linha">
-                  <span>{parcelas > 1 ? '1ª parcela quando?' : 'Vai pagar quando?'} <i>(opcional)</i></span>
-                  <span className="data-com-limpar">
-                    <input type="date" value={vencimento} min={data} onChange={(e) => setVencimento(e.target.value)} />
-                    {vencimento && <button className="limpar-data" onClick={() => setVencimento('')} aria-label="Tirar data">✕</button>}
-                  </span>
-                </div>
-                {!vencimento && clienteAtual && (
-                  <div className="dica-venc">
-                    Sem data marcada: {parcelas > 1 ? 'a 1ª vence' : 'vence'} {dataCurta(vencimentoPadrao(data, clienteAtual.diaPagamento))}
-                    {clienteAtual.diaPagamento ? ` (dia ${clienteAtual.diaPagamento} combinado)` : ' (30 dias)'}
-                  </div>
-                )}
-                {totalDoFiado > 0 && (
-                  <div className="parcelar">
-                    <div className="parcelar-t">Parcelar em</div>
-                    <div className="parcelas-opcoes">
-                      {OPCOES_PARCELAS.map((n) => (
-                        <button key={n} className={parcelas === n ? 'on' : ''} onClick={() => setParcelas(n)}>
-                          {n === 1 ? 'À vista' : `${n}x`}
-                        </button>
-                      ))}
-                    </div>
-                    {parcelas > 1 && clienteAtual && <div className="parcelar-resumo">{resumoParcelas()}</div>}
-                  </div>
-                )}
-              </>
+            {tipo === 'pagamento' && (
+              <div className="data-linha">
+                <span>Quando foi?</span>
+                <input type="date" value={data} max={dataHojeISO()} onChange={(e) => setData(e.target.value || dataHojeISO())} />
+              </div>
             )}
             <div className="pad">
               {TECLAS.map((k) => <button key={k} onClick={() => tecla(k)}>{k}</button>)}
@@ -443,14 +398,64 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
             <button
               className="cf"
               style={{ background: !clienteAtual ? 'var(--muted)' : tipo === 'fiado' ? 'var(--debt)' : 'var(--paid)' }}
-              onClick={clienteAtual ? () => salvar() : () => setPickerAberto(true)}
-              disabled={salvando || confirmarExcedente}
+              onClick={!clienteAtual ? () => setPickerAberto(true) : tipo === 'fiado' ? irParaFechar : () => salvar()}
+              disabled={salvando || confirmarExcedente || (clienteAtual && tipo === 'fiado' && totalDoFiado <= 0)}
             >
               {salvando ? 'Salvando…'
                 : !clienteAtual ? 'Escolha o cliente primeiro'
                   : tipo === 'pagamento' ? 'Anotar pagamento'
-                    : (pecas.length === 0 ? 'Anotar fiado'
-                      : `Anotar ${pecas.length + (valorDigitado(valor) > 0 ? 1 : 0)} peças · ${fmt(totalDoFiado)}`) + (parcelas > 1 ? ` em ${parcelas}x` : '')}
+                    : `OK · ${fmt(totalDoFiado)}`}
+            </button>
+          </div>
+        )}
+
+        {!pickerAberto && fechandoFiado && (
+          <div className="lanc-body">
+            <button className="voltar-pecas" onClick={() => setEtapa('pecas')}>‹ Voltar e mexer nas peças</button>
+            <div className="fechar-resumo">
+              {pecas.map((p, idx) => (
+                <div className="peca" key={idx}>
+                  <span className="n">{p.item}</span>
+                  <span className="v">{fmt(p.valor)}</span>
+                  <button className="limpar-data" onClick={() => tirarPeca(idx)} aria-label="Tirar peça">✕</button>
+                </div>
+              ))}
+              <div className="fechar-total">
+                <span>Total</span>
+                <b>{fmt(totalPecas)}</b>
+              </div>
+            </div>
+            <div className="data-linha">
+              <span>Quando foi?</span>
+              <input type="date" value={data} max={dataHojeISO()} onChange={(e) => setData(e.target.value || dataHojeISO())} />
+            </div>
+            <div className="data-linha">
+              <span>{parcelas > 1 ? '1ª parcela quando?' : 'Vai pagar quando?'} <i>(opcional)</i></span>
+              <span className="data-com-limpar">
+                <input type="date" value={vencimento} min={data} onChange={(e) => setVencimento(e.target.value)} />
+                {vencimento && <button className="limpar-data" onClick={() => setVencimento('')} aria-label="Tirar data">✕</button>}
+              </span>
+            </div>
+            {!vencimento && (
+              <div className="dica-venc">
+                Sem data marcada: {parcelas > 1 ? 'a 1ª vence' : 'vence'} {dataCurta(vencimentoPadrao(data, clienteAtual.diaPagamento))}
+                {clienteAtual.diaPagamento ? ` (dia ${clienteAtual.diaPagamento} combinado)` : ' (30 dias)'}
+              </div>
+            )}
+            <div className="parcelar">
+              <div className="parcelar-t">Parcelar em</div>
+              <div className="parcelas-opcoes">
+                {OPCOES_PARCELAS.map((n) => (
+                  <button key={n} className={parcelas === n ? 'on' : ''} onClick={() => setParcelas(n)}>
+                    {n === 1 ? 'À vista' : `${n}x`}
+                  </button>
+                ))}
+              </div>
+              {parcelas > 1 && <div className="parcelar-resumo">{resumoParcelas()}</div>}
+            </div>
+            {erroSalvar && <div className="form-erro" style={{ margin: '0 3px 10px' }}>{erroSalvar}</div>}
+            <button className="cf" style={{ background: 'var(--debt)' }} onClick={() => salvar()} disabled={salvando}>
+              {salvando ? 'Salvando…' : `Anotar fiado · ${fmt(totalPecas)}${parcelas > 1 ? ` em ${parcelas}x` : ''}`}
             </button>
           </div>
         )}

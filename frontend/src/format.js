@@ -57,13 +57,39 @@ export function corAvatar(id) {
   return CORES_AVATAR[id % CORES_AVATAR.length]
 }
 
+// "2026-09-26" -> "26/09/2026"
+export function dataCompleta(dataISO) {
+  const [ano, mes, dia] = dataISO.split('-')
+  return `${dia}/${mes}/${ano}`
+}
+
 export function dataCurta(dataISO) {
   const [, mes, dia] = dataISO.split('-')
   return `${dia}/${mes}`
 }
 
+// DDD + número, sem o +55: tira o 55 de quem colou com código do país e o 0 da frente
+// (nenhum DDD começa com 0). Fica com no máximo 11 dígitos.
+export function digitosNacionais(valor) {
+  let digitos = soDigitos(valor)
+  if (digitos.length >= 12 && digitos.startsWith('55')) digitos = digitos.slice(2)
+  return digitos.replace(/^0+/, '').slice(0, 11)
+}
+
+// Telefone completo (DDD + 8 ou 9 dígitos)?
+export function telefoneValido(valor) {
+  const tamanho = digitosNacionais(valor).length
+  return tamanho === 10 || tamanho === 11
+}
+
+// Como o telefone é salvo e mostrado: "+55 (85) 99999-0000". Número incompleto fica como está.
+export function telefoneComPais(valor) {
+  return telefoneValido(valor) ? `+55 ${formatarTelefone(valor)}` : (valor || '')
+}
+
+// Máscara do campo (o +55 fica fixo do lado de fora): "(85) 99999-0000".
 export function formatarTelefone(valor) {
-  const digitos = valor.replace(/\D/g, '').slice(0, 11)
+  const digitos = digitosNacionais(valor)
   if (digitos.length === 0) return ''
 
   const ddd = digitos.slice(0, 2)
@@ -74,13 +100,6 @@ export function formatarTelefone(valor) {
   const fim = numero.length > 4 ? numero.slice(-4) : ''
 
   return fim ? `(${ddd}) ${meio}-${fim}` : `(${ddd}) ${meio}`
-}
-
-export function dataHoraAgora() {
-  const agora = new Date()
-  const data = `${String(agora.getDate()).padStart(2, '0')}/${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`
-  const hora = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`
-  return `${data} às ${hora}`
 }
 
 export function dataRelativa(dataISO) {
@@ -122,13 +141,52 @@ export function paraDigitado(numero) {
   return Number(numero).toFixed(2).replace('.', ',')
 }
 
-// Peças (fiados) que ainda falta pagar, da mais antiga para a mais nova. O backend calcula o
-// "restante" de cada fiado: pagamento ligado a uma peça abate dela; o resto abate das mais antigas.
-export function pecasEmAberto(lancamentos) {
-  return lancamentos
+// Nome gravado nas parcelas: "Parcela 1/3 · Camisa, Tênis" (várias peças) ou "Tênis (1/3)" (uma peça).
+function lerParcela(item) {
+  const varias = item.match(/^Parcela (\d+)\/(\d+) · (.+)$/)
+  if (varias) return { numero: Number(varias[1]), total: Number(varias[2]), nome: varias[3] }
+  const uma = item.match(/^(.+) \((\d+)\/(\d+)\)$/)
+  if (uma) return { numero: Number(uma[2]), total: Number(uma[3]), nome: uma[1] }
+  return null
+}
+
+// O que falta pagar, em compras: as parcelas da mesma compra ficam juntas, e as compras vêm na ordem
+// de quem vence primeiro. O backend calcula o "restante" de cada fiado; o vencimento sem data marcada
+// segue a mesma regra do backend (dia combinado ou 30 dias).
+// Cada compra: { chave, nome, data, parcelas (nº de vezes, ou null), total, itens: [{ lancamento, numero, restante, valorOriginal, venceEm }] }
+export function comprasEmAberto(lancamentos, diaPagamento) {
+  const compras = new Map()
+  lancamentos
     .filter((l) => l.tipo === 'FIADO' && Number(l.restante) > 0)
-    .sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : (a.id ?? 0) - (b.id ?? 0)))
-    .map((l) => ({ ...l, valorTotal: Number(l.restante), valorOriginal: Number(l.valorTotal) }))
+    .forEach((l) => {
+      const parcela = lerParcela(l.item)
+      const chave = parcela ? `${l.data}|${parcela.nome}|${parcela.total}` : `id:${l.id}`
+      if (!compras.has(chave)) {
+        compras.set(chave, { chave, nome: parcela ? parcela.nome : l.item, data: l.data, parcelas: parcela?.total ?? null, total: 0, itens: [] })
+      }
+      const compra = compras.get(chave)
+      compra.total += Number(l.restante)
+      compra.itens.push({
+        lancamento: l,
+        numero: parcela?.numero ?? null,
+        restante: Number(l.restante),
+        valorOriginal: Number(l.valorTotal),
+        venceEm: l.vencimento || vencimentoPadrao(l.data, diaPagamento),
+      })
+    })
+  const lista = [...compras.values()]
+  lista.forEach((c) => c.itens.sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0) || (a.venceEm < b.venceEm ? -1 : 1)))
+  const primeiroVencimento = (c) => c.itens.reduce((min, i) => (i.venceEm < min ? i.venceEm : min), c.itens[0].venceEm)
+  return lista.sort((a, b) => (primeiroVencimento(a) < primeiroVencimento(b) ? -1 : primeiroVencimento(a) > primeiroVencimento(b) ? 1 : 0))
+}
+
+// "venceu 17/09" (atrasado), "vence hoje", "vence 30/10 · faltam 3 dias" ou "vence 30/10".
+export function prazoDaParcela(venceEm) {
+  const faltam = diasAte(venceEm)
+  if (faltam < 0) return { classe: 'late', texto: `venceu ${dataCurta(venceEm)}` }
+  if (faltam === 0) return { classe: 'soon', texto: 'vence hoje' }
+  if (faltam <= 5) return { classe: 'soon', texto: `vence ${dataCurta(venceEm)} · faltam ${faltam} dia${faltam > 1 ? 's' : ''}` }
+  return { classe: 'ok', texto: `vence ${dataCurta(venceEm)}` }
 }
 
 // Dias de hoje até a data (negativo se já passou).

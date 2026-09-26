@@ -1,4 +1,5 @@
 import { ITENS_NAV } from './NavBar'
+import Icone from './Icone'
 
 // Navegação do layout desktop: substitui a barra de baixo e o botão flutuante (+).
 export default function Sidebar({ telaAtual, aoTrocarTela, aoNovoLancamento }) {
@@ -21,7 +22,7 @@ export default function Sidebar({ telaAtual, aoTrocarTela, aoNovoLancamento }) {
             className={`side-item ${telaAtual === item.id ? 'on' : ''}`}
             onClick={() => aoTrocarTela(item.id)}
           >
-            <span className="i">{item.icone}</span>
+            <span className="i"><Icone nome={item.icone} /></span>
             {item.label}
           </button>
         ))}
