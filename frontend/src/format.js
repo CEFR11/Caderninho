@@ -16,6 +16,24 @@ export function mesEAnoAtual() {
   return `${MESES_COMPLETOS[hoje.getMonth()]} ${hoje.getFullYear()}`
 }
 
+export function chaveDoMes(data) {
+  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`
+}
+
+export function chaveMesAtual() {
+  return chaveDoMes(new Date())
+}
+
+export function mesAnoLabel(chaveAnoMes) {
+  const [ano, mes] = chaveAnoMes.split('-').map(Number)
+  return `${MESES_COMPLETOS[mes - 1]} ${ano}`
+}
+
+export function deslocarMes(chaveAnoMes, delta) {
+  const [ano, mes] = chaveAnoMes.split('-').map(Number)
+  return chaveDoMes(new Date(ano, mes - 1 + delta, 1))
+}
+
 export function dataHojeISO() {
   const hoje = new Date()
   const mes = String(hoje.getMonth() + 1).padStart(2, '0')

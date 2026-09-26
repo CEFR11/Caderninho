@@ -39,4 +39,9 @@ public class FinanceiroController {
         return  ResponseEntity.ok(financeiroService.gerarMensal());
     }
 
+    @GetMapping("/movimentos")
+    public ResponseEntity<List<MovimentoDTO>> gerarMovimentos() {
+        return ResponseEntity.ok(financeiroService.gerarMovimentos());
+    }
+
 }

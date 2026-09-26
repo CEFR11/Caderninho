@@ -113,6 +113,12 @@ public class FinanceiroService {
         return pagamentos.stream().map(l -> new PagamentoDTO(l.getCliente().getNome(), l.getItem(), l.getValorTotal(), l.getData())).toList();
     }
 
+    public List<MovimentoDTO> gerarMovimentos() {
+        return lancamentoRepository.findAll().stream()
+                .map(l -> new MovimentoDTO(l.getCliente().getNome(), l.getTipo(), l.getItem(), l.getValorTotal(), l.getData()))
+                .toList();
+    }
+
     public List<MesResumoDTO> gerarMensal() {
 
         List<String> nomesDosMeses = List.of("JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ");

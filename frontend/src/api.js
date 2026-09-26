@@ -28,6 +28,7 @@ export const api = {
   fila: (filtro = 'prioridade') => get(`/financeiro/fila?filtro=${filtro}`),
   pagamentos: () => get('/financeiro/pagamentos'),
   mensal: () => get('/financeiro/mensal'),
+  movimentos: () => get('/financeiro/movimentos'),
   clientes: () => get('/clientes'),
   buscarClientes: (nome) => get(`/clientes/busca?nome=${encodeURIComponent(nome)}`),
   cliente: (id) => get(`/clientes/${id}`),
