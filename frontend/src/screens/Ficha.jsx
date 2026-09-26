@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import { fmt, iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta, rotuloSaldo, valorSaldo } from '../format'
-import { linkWhatsApp, mensagemExtrato } from '../whatsapp'
+import { iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta, rotuloSaldo, valorSaldo, anotacoesEmAberto } from '../format'
+import { linkWhatsApp, mensagemExtrato, mensagemCobranca } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
 import EditarLancamentoModal from '../components/EditarLancamentoModal'
 import ClienteModal from '../components/ClienteModal'
+import ValorAnotacao from '../components/ValorAnotacao'
 
 export default function Ficha({ clienteId, refreshKey, embutida = false, aoVoltar, aoAbrirLancamento, aoEditarLancamento, aoApagarLancamento, clientes, aoEditarCliente, aoExcluirCliente, aoMostrarToast }) {
   const [cliente, setCliente] = useState(null)
@@ -61,13 +62,23 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
           <button className="btn debt" onClick={() => aoAbrirLancamento('fiado', cliente.id)}>+ Fiado</button>
           <button className="btn paid" onClick={() => aoAbrirLancamento('pagamento', cliente.id)}>+ Pagamento</button>
         </div>
+        {saldo > 0 && (
+          <a
+            className="btn cobrar"
+            href={linkWhatsApp(cliente.telefone, mensagemCobranca(cliente))}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Cobrar pelo WhatsApp
+          </a>
+        )}
         <button
           className="btn"
           style={{ background: 'var(--primary)', display: 'block', width: '100%', marginTop: 9, boxSizing: 'border-box' }}
           onClick={compartilharImagemExtrato}
           disabled={compartilhando}
         >
-          {compartilhando ? 'Gerando imagem…' : 'Compartilhar extrato (imagem)'}
+          {compartilhando ? 'Gerando imagem…' : 'Mandar conta em aberto (imagem)'}
         </button>
         <a
           className="back"
@@ -76,21 +87,21 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
           target="_blank"
           rel="noopener noreferrer"
         >
-          Ou enviar só como texto
+          Ou mandar só em texto
         </a>
       </div>
 
       <div style={{ position: 'fixed', top: 0, left: -9999, zIndex: -1 }}>
         <ReciboCard
           ref={reciboRef}
-          dados={{ modo: 'extrato', nome: cliente.nome, itens: extrato, saldo, emitidoEm: dataHoraAgora() }}
+          dados={{ modo: 'extrato', nome: cliente.nome, itens: anotacoesEmAberto(cliente.lancamentos), saldo, emitidoEm: dataHoraAgora() }}
         />
       </div>
 
       <div className="eyebrow">Extrato completo</div>
       {extrato.length > 0 && <div className="dica">Anotou errado? Toque no item para corrigir ou apagar.</div>}
       {extrato.length === 0
-        ? <div className="empty">Sem lançamentos ainda.</div>
+        ? <div className="empty">Nenhuma anotação ainda.</div>
         : extrato.map((l, idx) => {
           const ehFiado = l.tipo === 'FIADO'
           return (
@@ -100,7 +111,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
                 <div className="it">{l.item}</div>
                 <div className="dt">{dataRelativa(l.data)}</div>
               </div>
-              <div className={`vl ${ehFiado ? 'debt' : 'paid'}`}>{ehFiado ? '+' : '−'}{fmt(l.valorTotal)}</div>
+              <ValorAnotacao tipo={l.tipo} valor={l.valorTotal} />
             </div>
           )
         })}

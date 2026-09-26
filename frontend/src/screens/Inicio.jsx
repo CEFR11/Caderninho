@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import ValorAnotacao from '../components/ValorAnotacao'
 import { fmt, dataRelativa } from '../format'
 
 export default function Inicio({ refreshKey }) {
@@ -42,9 +43,6 @@ export default function Inicio({ refreshKey }) {
 
   const total = Number(resumo.totalAReceber)
   const recebidoMes = Number(resumo.recebidoNoMes)
-  const pct = (recebidoMes + total) > 0
-    ? Math.round((recebidoMes / (recebidoMes + total)) * 100)
-    : 0
   const somaAtrasados = atrasados.reduce((s, c) => s + Number(c.saldo), 0)
 
   return (
@@ -54,11 +52,9 @@ export default function Inicio({ refreshKey }) {
           <div className="hero">
             <div className="lbl">Total a receber</div>
             <div className="big">{fmt(total)}</div>
-            <div className="sub">{devedores} clientes com saldo em aberto</div>
-            <div className="bar"><span style={{ width: `${pct}%` }} /></div>
+            <div className="sub">{devedores} cliente{devedores !== 1 ? 's' : ''} devendo</div>
             <div className="bar-legend">
-              <span>Recebido no mês {fmt(recebidoMes)}</span>
-              <span>{pct}%</span>
+              <span>Recebido este mês: {fmt(recebidoMes)}</span>
             </div>
           </div>
 
@@ -85,9 +81,9 @@ export default function Inicio({ refreshKey }) {
         </div>
 
         <div className="col">
-          <div className="eyebrow">Movimento recente</div>
+          <div className="eyebrow">Últimas anotações</div>
           {recentes.length === 0
-            ? <div className="empty">Nenhum lançamento ainda.</div>
+            ? <div className="empty">Nenhuma anotação ainda.</div>
             : recentes.map((r, idx) => {
               const ehFiado = r.tipo === 'FIADO'
               return (
@@ -97,7 +93,7 @@ export default function Inicio({ refreshKey }) {
                     <div className="it">{r.nome}</div>
                     <div className="dt">{r.item} · {dataRelativa(r.data)}</div>
                   </div>
-                  <div className={`vl ${ehFiado ? 'debt' : 'paid'}`}>{ehFiado ? '+' : '−'}{fmt(r.valorTotal)}</div>
+                  <ValorAnotacao tipo={r.tipo} valor={r.valorTotal} />
                 </div>
               )
             })}

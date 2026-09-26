@@ -105,7 +105,7 @@ export function soDigitos(valor) {
 
 // Saldo negativo acontece quando o cliente paga a mais: vira crédito, não "dívida negativa".
 export function rotuloSaldo(saldo) {
-  return Number(saldo) < 0 ? 'Crédito do cliente' : 'Saldo devedor'
+  return Number(saldo) < 0 ? 'Crédito do cliente' : 'Total que deve'
 }
 
 export function valorSaldo(saldo) {
@@ -120,4 +120,19 @@ export function valorDigitado(texto) {
 // Número para o formato do teclado do modal (255.5 -> "255,50").
 export function paraDigitado(numero) {
   return Number(numero).toFixed(2).replace('.', ',')
+}
+
+// Só o que o cliente ainda está pagando: as anotações depois da última vez que a conta zerou.
+// Devolve da mais recente para a mais antiga.
+export function anotacoesEmAberto(lancamentos) {
+  const ordenados = [...lancamentos].sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : (a.id ?? 0) - (b.id ?? 0)))
+  let saldo = 0
+  let inicio = 0
+  ordenados.forEach((l, i) => {
+    saldo += l.tipo === 'FIADO' ? Number(l.valorTotal) : -Number(l.valorTotal)
+    // A conta só "fecha" no fim do dia: no mesmo dia a ordem de anotação não quer dizer nada.
+    const ultimoDoDia = i === ordenados.length - 1 || ordenados[i + 1].data !== l.data
+    if (ultimoDoDia && saldo <= 0) inicio = i + 1
+  })
+  return ordenados.slice(inicio).reverse()
 }

@@ -56,7 +56,7 @@ body {
 }
 .brand .name { font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 17px; letter-spacing: -.3px; }
 .month-chip {
-  font-size: 11.5px; font-weight: 600; color: var(--muted); background: var(--card);
+  font-size: 12.5px; font-weight: 600; color: var(--muted); background: var(--card);
   border: 1px solid var(--line); padding: 5px 11px; border-radius: 999px;
 }
 
@@ -67,7 +67,7 @@ body {
 }
 
 .eyebrow {
-  font-family: 'Plus Jakarta Sans'; font-size: 10.5px; font-weight: 700; letter-spacing: 1.1px;
+  font-family: 'Plus Jakarta Sans'; font-size: 11.5px; font-weight: 700; letter-spacing: 1.1px;
   text-transform: uppercase; color: var(--muted); margin: 20px 2px 9px;
 }
 .eyebrow:first-child { margin-top: 4px; }
@@ -82,20 +82,20 @@ body {
   content: ''; position: absolute; right: -40px; top: -60px; width: 170px; height: 170px;
   border-radius: 50%; background: rgba(255, 255, 255, .10);
 }
-.hero .lbl { font-size: 11.5px; font-weight: 500; color: #CFE4FF; letter-spacing: .3px; }
+.hero .lbl { font-size: 12.5px; font-weight: 500; color: #CFE4FF; letter-spacing: .3px; }
 .hero .big {
   font-family: 'JetBrains Mono'; font-weight: 700; font-size: 36px; letter-spacing: -1.5px;
   margin-top: 3px; line-height: 1;
 }
-.hero .sub { font-size: 11.5px; color: #C7DFFF; margin-top: 7px; }
+.hero .sub { font-size: 12.5px; color: #C7DFFF; margin-top: 7px; }
 .bar { height: 7px; border-radius: 99px; background: rgba(255, 255, 255, .22); margin-top: 14px; overflow: hidden; display: flex; }
 .bar span { display: block; height: 100%; background: #5CE9B0; border-radius: 99px; transition: width .3s; }
-.bar-legend { display: flex; justify-content: space-between; font-size: 10.5px; color: #CFE4FF; margin-top: 7px; }
+.bar-legend { display: flex; justify-content: space-between; font-size: 11.5px; color: #CFE4FF; margin-top: 7px; }
 
 /* ---------- QUICK GRID ---------- */
 .quickgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .qcard { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 13px 14px; }
-.qcard .t { font-size: 11px; color: var(--muted); font-weight: 500; }
+.qcard .t { font-size: 12px; color: var(--muted); font-weight: 500; }
 .qcard .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 17px; margin-top: 4px; letter-spacing: -.5px; }
 .qcard .v.debt { color: var(--debt); }
 .qcard .v.paid { color: var(--paid); }
@@ -121,7 +121,7 @@ body {
 }
 .nvi {
   background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  color: var(--muted); font-family: 'Plus Jakarta Sans'; font-size: 9.5px; font-weight: 600; width: 60px; padding-top: 10px;
+  color: var(--muted); font-family: 'Plus Jakarta Sans'; font-size: 10.5px; font-weight: 600; width: 60px; padding-top: 10px;
 }
 .nvi .i { font-size: 17px; line-height: 1; }
 .nvi.on { color: var(--primary); }
@@ -137,7 +137,7 @@ body {
 .chips { display: flex; gap: 7px; margin-bottom: 12px; flex-wrap: wrap; }
 .chip {
   border: 1px solid var(--line); background: var(--card); color: var(--muted);
-  font-family: 'Plus Jakarta Sans'; font-size: 11.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer;
+  font-family: 'Plus Jakarta Sans'; font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer;
 }
 .chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
 
@@ -146,7 +146,7 @@ body {
   display: flex; justify-content: space-between; align-items: center; background: var(--ink); color: #fff;
   border-radius: 16px; padding: 14px 16px; margin-bottom: 14px;
 }
-.total-strip .l { font-size: 11.5px; color: #A5AAC4; }
+.total-strip .l { font-size: 12.5px; color: #A5AAC4; }
 .total-strip .r { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 19px; letter-spacing: -.6px; }
 
 /* ---------- QUEUE (fila de prioridade) ---------- */
@@ -162,7 +162,7 @@ body {
 }
 .queue-item .body { flex: 1; min-width: 0; }
 .queue-item .nm { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13.5px; letter-spacing: -.2px; }
-.queue-item .meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.queue-item .meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .queue-item .amt {
   font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14.5px; color: var(--debt); text-align: right; flex: 0 0 auto;
 }
@@ -171,7 +171,7 @@ body {
 .u-hi span { background: var(--debt); }
 .u-md span { background: var(--warn); }
 .u-lo span { background: var(--paid); }
-.flag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; letter-spacing: .3px; display: inline-block; }
+.flag { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; letter-spacing: .3px; display: inline-block; }
 .flag.late { background: var(--debt-soft); color: var(--debt); }
 .flag.soon { background: var(--warn-soft); color: #9A6B0C; }
 .flag.ok { background: var(--paid-soft); color: var(--paid); }
@@ -193,7 +193,7 @@ body {
   70% { box-shadow: 0 0 0 10px rgba(26, 126, 245, 0); }
   100% { box-shadow: 0 0 0 0 rgba(26, 126, 245, 0); }
 }
-.campo-label { font-size: 11.5px; font-weight: 600; color: var(--muted); margin: 0 3px 5px; }
+.campo-label { font-size: 12.5px; font-weight: 600; color: var(--muted); margin: 0 3px 5px; }
 .desc.campo { margin: 0 0 12px; }
 .campo-prefixo { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13px; color: var(--muted); }
 .apagar {
@@ -225,7 +225,7 @@ body {
   font-size: 12.5px; line-height: 1.45; color: #7A5410; display: flex; flex-direction: column; gap: 8px;
 }
 .aviso-excedente b { color: #5C3E06; }
-.form-erro { font-size: 11.5px; color: var(--debt); margin: -6px 0 10px 3px; }
+.form-erro { font-size: 12.5px; color: var(--debt); margin: -6px 0 10px 3px; }
 
 .add-cliente {
   width: 100%; display: flex; align-items: center; gap: 10px; background: var(--primary-soft);
@@ -241,7 +241,7 @@ body {
 
 /* ---------- CLIENTES (lista) ---------- */
 .letter {
-  font-family: 'Plus Jakarta Sans'; font-size: 11px; font-weight: 800; color: var(--muted);
+  font-family: 'Plus Jakarta Sans'; font-size: 12px; font-weight: 800; color: var(--muted);
   margin: 14px 4px 7px; letter-spacing: .6px;
 }
 .crow {
@@ -255,7 +255,7 @@ body {
 }
 .crow .info { flex: 1; min-width: 0; }
 .crow .nm { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13.5px; letter-spacing: -.2px; }
-.crow .sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.crow .sub { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
 .crow .right { text-align: right; flex: 0 0 auto; }
 .crow .sal { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; letter-spacing: -.4px; }
 .crow .sal.dev { color: var(--debt); }
@@ -280,12 +280,12 @@ body {
 .ficha-head .nm { font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 18px; letter-spacing: -.4px; }
 .ficha-head .tel { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .ficha-sal { background: var(--debt-soft); border-radius: 16px; padding: 13px; margin-top: 15px; }
-.ficha-sal .l { font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #B0393D; }
+.ficha-sal .l { font-size: 11.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #B0393D; }
 .ficha-sal .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 28px; color: var(--debt); letter-spacing: -1px; margin-top: 2px; }
 .ficha-sal.ok { background: var(--paid-soft); }
 .ficha-sal.ok .l { color: #0B7C56; }
 .ficha-sal.ok .v { color: var(--paid); }
-.ficha-sal .desde { font-size: 11.5px; color: #B0393D; margin-top: 2px; }
+.ficha-sal .desde { font-size: 12.5px; color: #B0393D; margin-top: 2px; }
 .acts { display: flex; gap: 9px; margin-top: 13px; }
 .btn {
   flex: 1; border: none; border-radius: 13px; padding: 13px 0; font-family: 'Plus Jakarta Sans'; font-weight: 700;
@@ -294,6 +294,9 @@ body {
 .btn:active { transform: scale(.97); }
 .btn.debt { background: var(--debt); }
 .btn.paid { background: var(--paid); }
+.btn.cobrar {
+  display: block; margin-top: 9px; text-align: center; text-decoration: none; background: #25A55F;
+}
 
 .ext {
   display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
@@ -304,44 +307,49 @@ body {
 .ext .dot.paid { background: var(--paid); }
 .ext .b { flex: 1; min-width: 0; }
 .ext .it { font-size: 13px; font-weight: 600; }
-.ext .dt { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.ext .dt { font-size: 12px; color: var(--muted); margin-top: 1px; }
 .ext .vl { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13.5px; }
 .ext .vl.debt { color: var(--debt); }
 .ext .vl.paid { color: var(--paid); }
+.valor-anot { text-align: right; flex: 0 0 auto; }
+.valor-anot .vv { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13.5px; }
+.valor-anot .vt { font-size: 11.5px; font-weight: 600; margin-top: 1px; }
+.valor-anot.debt { color: var(--debt); }
+.valor-anot.paid { color: var(--paid); }
 .ext.clicavel { cursor: pointer; transition: transform .12s; }
 .ext.clicavel:active { transform: scale(.985); }
 .desktop .ext.clicavel:hover { border-color: #CFD3E0; }
-.dica { font-size: 11.5px; color: var(--muted); margin: -4px 2px 9px; }
+.dica { font-size: 12.5px; color: var(--muted); margin: -4px 2px 9px; }
 
 /* ---------- FINANCEIRO ---------- */
 .fin-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .fin-card { border-radius: 20px; padding: 16px; border: 1px solid var(--line); background: var(--card); }
 .fin-card.rec { background: var(--debt-soft); border-color: #F8D5D6; }
 .fin-card.pag { background: var(--paid-soft); border-color: #CDEBDF; }
-.fin-card .l { font-size: 11px; font-weight: 600; color: var(--muted); }
+.fin-card .l { font-size: 12px; font-weight: 600; color: var(--muted); }
 .fin-card.rec .l { color: #B0393D; }
 .fin-card.pag .l { color: #0B7C56; }
 .fin-card .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 21px; letter-spacing: -.8px; margin-top: 5px; }
 .fin-card.rec .v { color: var(--debt); }
 .fin-card.pag .v { color: var(--paid); }
-.fin-card .d { font-size: 10.5px; color: var(--muted); margin-top: 4px; }
+.fin-card .d { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
 
 .chart { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 16px 16px 12px; }
 .chart .hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
 .chart .hd .t { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13.5px; }
-.chart .hd .s { font-size: 11px; color: var(--muted); }
+.chart .hd .s { font-size: 12px; color: var(--muted); }
 .bars { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
 .bcol {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%;
   justify-content: flex-end; background: none; border: none; padding: 0; cursor: pointer; border-radius: 6px;
 }
-.bcol .lb { font-size: 9.5px; color: var(--muted); font-family: 'JetBrains Mono'; }
+.bcol .lb { font-size: 10.5px; color: var(--muted); font-family: 'JetBrains Mono'; }
 .bcol.on .lb { color: var(--primary); font-weight: 700; }
 .bstack { width: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; height: 100%; }
 .bseg { width: 100%; border-radius: 4px; }
 .bseg.p { background: var(--paid); }
-.bseg.d { background: #CFE0FA; }
-.legend { display: flex; gap: 14px; margin-top: 12px; font-size: 11px; color: var(--muted); }
+.bseg.d { background: #F5C2C4; }
+.legend { display: flex; gap: 14px; margin-top: 12px; font-size: 12px; color: var(--muted); }
 .legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; margin-right: 5px; }
 
 .mes-nav { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 20px 2px 12px; }
@@ -358,7 +366,7 @@ body {
 .frow:last-child { border-bottom: none; }
 .frow .b { flex: 1; min-width: 0; }
 .frow .n { font-size: 13px; font-weight: 600; }
-.frow .m { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.frow .m { font-size: 12px; color: var(--muted); margin-top: 1px; }
 .frow .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13.5px; color: var(--paid); }
 .frow .v.debt { color: var(--debt); }
 
@@ -401,7 +409,7 @@ body {
 .who-btn:active { transform: scale(.99); }
 .who-tx { flex: 1; font-size: 12.5px; color: var(--muted); }
 .who-tx b { display: block; font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 14px; color: var(--ink); margin-top: 1px; }
-.who-btn .chev { font-size: 11px; font-weight: 600; color: var(--primary); }
+.who-btn .chev { font-size: 12px; font-weight: 600; color: var(--primary); }
 .picker { display: none; max-height: 280px; overflow-y: auto; margin-bottom: 8px; }
 .picker.open { display: block; }
 .lanc-body { display: block; }
@@ -410,7 +418,7 @@ body {
 .prow:active { background: #EDEFF6; }
 .prow .info { flex: 1; min-width: 0; }
 .prow .nm { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13px; }
-.prow .sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.prow .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
 .prow .sal { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 12.5px; }
 .prow .sal.dev { color: var(--debt); }
 .prow .sal.zero { color: var(--muted); }

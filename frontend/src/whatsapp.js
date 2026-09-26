@@ -1,4 +1,4 @@
-import { fmt, dataCurta, rotuloSaldo, valorSaldo } from './format'
+import { fmt, dataCurta, rotuloSaldo, valorSaldo, anotacoesEmAberto } from './format'
 
 export function linkWhatsApp(telefone, mensagem) {
   const digitos = telefone.replace(/\D/g, '')
@@ -12,25 +12,32 @@ export function mensagemRecibo({ nome, tipo, item, valor, data, saldoDepois }) {
     '',
     `Data: ${dataCurta(data)}`,
     `Item: ${item}`,
-    `${tipo === 'fiado' ? 'Fiado' : 'Pagamento'}: ${fmt(valor)}`,
+    `${tipo === 'fiado' ? 'Fiado' : 'Pagou'}: ${fmt(valor)}`,
     '',
-    `${rotuloSaldo(saldoDepois)} atual: ${valorSaldo(saldoDepois)}`,
+    `${rotuloSaldo(saldoDepois)}: ${valorSaldo(saldoDepois)}`,
   ].join('\n')
 }
 
 export function mensagemExtrato(cliente) {
-  const linhas = [`Olá, ${cliente.nome}! Segue seu extrato no Caderninho:`, '']
-
-  if (cliente.lancamentos.length === 0) {
-    linhas.push('Nenhum lançamento registrado ainda.')
-  } else {
-    const ordenados = [...cliente.lancamentos].sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0))
-    ordenados.forEach((l) => {
-      const rotulo = l.tipo === 'FIADO' ? 'Fiado' : 'Pagamento'
-      linhas.push(`${dataCurta(l.data)} - ${l.item} (${rotulo}) - ${fmt(l.valorTotal)}`)
-    })
+  const abertas = anotacoesEmAberto(cliente.lancamentos)
+  if (abertas.length === 0) {
+    return `Olá, ${cliente.nome}! Sua conta no Caderninho está em dia. Obrigado!`
   }
 
-  linhas.push('', `${rotuloSaldo(cliente.saldoDevedor)} atual: ${valorSaldo(cliente.saldoDevedor)}`)
+  const linhas = [`Olá, ${cliente.nome}! Segue o que está em aberto na sua conta:`, '']
+  abertas.forEach((l) => {
+    const rotulo = l.tipo === 'FIADO' ? 'Fiado' : 'Pagou'
+    linhas.push(`${dataCurta(l.data)} - ${l.item} (${rotulo}) - ${fmt(l.valorTotal)}`)
+  })
+  linhas.push('', `${rotuloSaldo(cliente.saldoDevedor)}: ${valorSaldo(cliente.saldoDevedor)}`)
   return linhas.join('\n')
+}
+
+export function mensagemCobranca(cliente) {
+  const desde = cliente.devendoDesde ? ` (desde ${dataCurta(cliente.devendoDesde)})` : ''
+  return [
+    `Oi, ${cliente.nome}! Tudo bem?`,
+    `Passando para lembrar da sua conta aqui: ${fmt(cliente.saldoDevedor)}${desde}.`,
+    'Quando puder, passa aqui para acertar. Obrigado!',
+  ].join('\n')
 }

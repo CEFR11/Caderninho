@@ -1,6 +1,6 @@
 const ESQUERDA = [
   { id: 'inicio', label: 'Início', icone: '◈' },
-  { id: 'fiados', label: 'Fiados', icone: '≡' },
+  { id: 'fiados', label: 'Cobrar', icone: '≡' },
 ]
 const DIREITA = [
   { id: 'clientes', label: 'Clientes', icone: '◎' },

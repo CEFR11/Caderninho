@@ -28,7 +28,10 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
     return (
         <div className="screen">
             <div className="total-strip">
-                <div className="l">Na fila de pagamento</div>
+                <div className="l">
+                    {filtro === 'atrasados' ? 'Devem há mais de 30 dias' : 'Para cobrar'}
+                    {' · '}{lista.length} cliente{lista.length !== 1 ? 's' : ''}
+                </div>
                 <div className="r">{fmt(total)}</div>
             </div>
 

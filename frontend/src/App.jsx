@@ -48,7 +48,7 @@ export default function App() {
   async function registrarLancamento(clienteId, dados) {
     const clienteAtualizado = await api.registrarLancamento(clienteId, dados)
     setRefreshKey((k) => k + 1)
-    mostrarToast(dados.tipo === 'FIADO' ? 'Fiado registrado' : 'Pagamento registrado')
+    mostrarToast(dados.tipo === 'FIADO' ? 'Fiado anotado' : 'Pagamento anotado')
     return clienteAtualizado
   }
 

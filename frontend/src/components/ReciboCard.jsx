@@ -38,7 +38,7 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
           <div style={{ fontFamily: "'Plus Jakarta Sans'", fontWeight: 800, fontSize: 18, letterSpacing: -0.3 }}>Caderninho</div>
         </div>
         <div style={{ fontSize: 11.5, color: '#CFE4FF', marginTop: 14, letterSpacing: 1, textTransform: 'uppercase', fontWeight: 700 }}>
-          {dados.modo === 'extrato' ? 'Extrato de cliente' : 'Recibo de lançamento'}
+          {dados.modo === 'extrato' ? 'Conta em aberto' : 'Recibo'}
         </div>
         <div style={{ fontFamily: "'Plus Jakarta Sans'", fontWeight: 800, fontSize: 22, marginTop: 4 }}>{dados.nome}</div>
       </div>
@@ -52,7 +52,7 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
           </>
         ) : (
           dados.itens.length === 0
-            ? <div style={{ fontSize: 12.5, color: '#7B819A', textAlign: 'center', padding: '10px 0' }}>Nenhum lançamento registrado ainda.</div>
+            ? <div style={{ fontSize: 12.5, color: '#7B819A', textAlign: 'center', padding: '10px 0' }}>Nada em aberto. Conta em dia!</div>
             : dados.itens.map((l, idx) => (
               <div
                 key={idx}
@@ -64,14 +64,14 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>{l.item}</div>
                   <div style={{ fontSize: 11, color: '#7B819A', marginTop: 1 }}>
-                    {dataCurta(l.data)} · {l.tipo === 'FIADO' ? 'Fiado' : 'Pagamento'}
+                    {dataCurta(l.data)} · {l.tipo === 'FIADO' ? 'Fiado' : 'Pagou'}
                   </div>
                 </div>
                 <div style={{
                   fontFamily: "'JetBrains Mono'", fontWeight: 700, fontSize: 13.5, flex: '0 0 auto',
                   color: l.tipo === 'FIADO' ? '#E5484D' : '#0E9F6E',
                 }}>
-                  {l.tipo === 'FIADO' ? '+' : '−'}{fmt(l.valorTotal)}
+                  {fmt(l.valorTotal)}
                 </div>
               </div>
             ))
@@ -79,7 +79,7 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
 
         <div style={{ height: 1, background: '#E7E9F0', margin: '18px 0' }} />
         <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: '#7B819A' }}>
-          {rotuloSaldo(dados.saldo)} atual
+          {rotuloSaldo(dados.saldo)}
         </div>
         <div style={{ fontFamily: "'JetBrains Mono'", fontWeight: 700, fontSize: 26, color: corSaldo, marginTop: 3 }}>
           {valorSaldo(dados.saldo)}

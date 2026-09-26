@@ -165,7 +165,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
       <div className="sheet">
         <div className="grab" />
         <div className="sh">
-          <div className="t">{recibo ? 'Lançamento salvo' : 'Novo lançamento'}</div>
+          <div className="t">{recibo ? 'Anotado!' : 'Nova anotação'}</div>
           <button className="x" onClick={aoFechar}>✕</button>
         </div>
 
@@ -174,7 +174,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
             <div style={{ textAlign: 'center', padding: '6px 0 16px' }}>
               <div style={{ fontSize: 38, lineHeight: 1 }}>✅</div>
               <div style={{ fontFamily: "'Plus Jakarta Sans'", fontWeight: 800, fontSize: 16, marginTop: 10 }}>
-                {recibo.tipo === 'fiado' ? 'Fiado registrado' : 'Pagamento registrado'}
+                {recibo.tipo === 'fiado' ? 'Fiado anotado' : 'Pagamento anotado'}
               </div>
               <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4 }}>
                 {recibo.nome} · {recibo.item} · {fmt(recibo.valor)}
@@ -310,11 +310,11 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 </div>
                 {saldoAtual > 0 && (
                   <button className="cf" style={{ background: 'var(--paid)' }} onClick={() => { setValor(paraDigitado(saldoAtual)); salvar(saldoAtual) }}>
-                    Registrar só {fmt(saldoAtual)} (quita a conta)
+                    Anotar só {fmt(saldoAtual)} (quita a conta)
                   </button>
                 )}
                 <button className="cf secundario" onClick={() => salvar(valorDigitado(valor))}>
-                  Registrar {fmt(valorDigitado(valor))} e deixar {fmt(valorDigitado(valor) - Math.max(0, saldoAtual))} de crédito
+                  Anotar {fmt(valorDigitado(valor))} e deixar {fmt(valorDigitado(valor) - Math.max(0, saldoAtual))} de crédito
                 </button>
               </div>
             )}
@@ -325,7 +325,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
               onClick={clienteAtual ? () => salvar() : () => setPickerAberto(true)}
               disabled={salvando || confirmarExcedente}
             >
-              {salvando ? 'Salvando…' : !clienteAtual ? 'Escolha o cliente primeiro' : tipo === 'fiado' ? 'Registrar fiado' : 'Registrar pagamento'}
+              {salvando ? 'Salvando…' : !clienteAtual ? 'Escolha o cliente primeiro' : tipo === 'fiado' ? 'Anotar fiado' : 'Anotar pagamento'}
             </button>
           </div>
         )}

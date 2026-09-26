@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import ValorAnotacao from '../components/ValorAnotacao'
 import { fmt, dataCurta, chaveDoMes, chaveMesAtual, mesAnoLabel, deslocarMes } from '../format'
 
 export default function Financeiro({ refreshKey }) {
-  const [resumo, setResumo] = useState(null)
-  const [devedores, setDevedores] = useState(0)
   const [meses, setMeses] = useState([])
   const [movimentos, setMovimentos] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -13,10 +12,8 @@ export default function Financeiro({ refreshKey }) {
 
   useEffect(() => {
     setCarregando(true)
-    Promise.all([api.resumo(), api.fila('prioridade'), api.mensal(), api.movimentos()])
-      .then(([dadosResumo, dadosFila, dadosMensal, dadosMovimentos]) => {
-        setResumo(dadosResumo)
-        setDevedores(dadosFila.length)
+    Promise.all([api.mensal(), api.movimentos()])
+      .then(([dadosMensal, dadosMovimentos]) => {
         setMeses(dadosMensal)
         setMovimentos(dadosMovimentos)
       })
@@ -49,13 +46,6 @@ export default function Financeiro({ refreshKey }) {
     <div className="screen">
       <div className="dash-grid">
         <div className="col">
-          <div className="eyebrow">Situação atual</div>
-          <div className="fin-card rec">
-            <div className="l">A receber</div>
-            <div className="v">{fmt(resumo.totalAReceber)}</div>
-            <div className="d">{devedores} cliente{devedores !== 1 ? 's' : ''} em aberto</div>
-          </div>
-
           <div className="eyebrow">Fiado × recebido</div>
           <div className="chart">
             <div className="hd">
@@ -80,7 +70,7 @@ export default function Financeiro({ refreshKey }) {
             </div>
             <div className="legend">
               <span><i style={{ background: 'var(--paid)' }} />Recebido</span>
-              <span><i style={{ background: '#CFE0FA' }} />Fiado</span>
+              <span><i style={{ background: '#F5C2C4' }} />Fiado</span>
             </div>
           </div>
 
@@ -103,23 +93,20 @@ export default function Financeiro({ refreshKey }) {
         </div>
 
         <div className="col">
-          <div className="eyebrow">Movimento de {mesAnoLabel(mesSelecionado)}</div>
+          <div className="eyebrow">Anotações de {mesAnoLabel(mesSelecionado)}</div>
           {movimentosDoMes.length === 0
-            ? <div className="empty">Nenhum lançamento nesse mês.</div>
+            ? <div className="empty">Nenhuma anotação nesse mês.</div>
             : (
               <div className="flist">
-                {movimentosDoMes.map((m, idx) => {
-                  const ehFiado = m.tipo === 'FIADO'
-                  return (
-                    <div className="frow" key={idx}>
-                      <div className="b">
-                        <div className="n">{m.nomeCliente}</div>
-                        <div className="m">{m.item} · {dataCurta(m.data)}</div>
-                      </div>
-                      <div className={`v ${ehFiado ? 'debt' : ''}`}>{ehFiado ? '+' : '−'}{fmt(m.valorTotal)}</div>
+                {movimentosDoMes.map((m, idx) => (
+                  <div className="frow" key={idx}>
+                    <div className="b">
+                      <div className="n">{m.nomeCliente}</div>
+                      <div className="m">{m.item} · {dataCurta(m.data)}</div>
                     </div>
-                  )
-                })}
+                    <ValorAnotacao tipo={m.tipo} valor={m.valorTotal} />
+                  </div>
+                ))}
               </div>
             )}
         </div>

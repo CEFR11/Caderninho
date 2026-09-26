@@ -11,7 +11,7 @@ export default function Sidebar({ telaAtual, aoTrocarTela, aoNovoLancamento }) {
 
       <button className="side-cta" onClick={aoNovoLancamento}>
         <span className="side-cta-ic">+</span>
-        Novo lançamento
+        Anotar
       </button>
 
       <nav className="side-nav">
