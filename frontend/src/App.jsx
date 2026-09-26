@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import NavBar, { ITENS_NAV } from './components/NavBar'
 import Sidebar from './components/Sidebar'
 import LancamentoModal from './components/LancamentoModal'
-import NovoClienteModal from './components/NovoClienteModal'
+import ClienteModal from './components/ClienteModal'
 import Inicio from './screens/Inicio'
 import Fiados from './screens/Fiados'
 import Clientes from './screens/Clientes'
@@ -77,6 +77,20 @@ export default function App() {
     abrirFicha(novoCliente.id)
   }
 
+  async function editarCliente(id, dados) {
+    await api.editarCliente(id, dados)
+    setRefreshKey((k) => k + 1)
+    mostrarToast('Cliente atualizado')
+  }
+
+  async function excluirCliente(id) {
+    await api.excluirCliente(id)
+    setRefreshKey((k) => k + 1)
+    mostrarToast('Cliente excluído')
+    setClienteFichaId(null)
+    setTela('clientes')
+  }
+
   const TELAS = {
     inicio: <Inicio refreshKey={refreshKey} />,
     fiados: <Fiados refreshKey={refreshKey} aoAbrirFicha={abrirFicha} />,
@@ -90,6 +104,9 @@ export default function App() {
         aoAbrirLancamento={abrirLancamento}
         aoEditarLancamento={editarLancamento}
         aoApagarLancamento={apagarLancamento}
+        clientes={clientes}
+        aoEditarCliente={editarCliente}
+        aoExcluirCliente={excluirCliente}
         aoMostrarToast={mostrarToast}
       />
     ),
@@ -117,6 +134,9 @@ export default function App() {
                 aoAbrirLancamento={abrirLancamento}
                 aoEditarLancamento={editarLancamento}
                 aoApagarLancamento={apagarLancamento}
+                clientes={clientes}
+                aoEditarCliente={editarCliente}
+                aoExcluirCliente={excluirCliente}
                 aoMostrarToast={mostrarToast}
               />
             )
@@ -171,10 +191,12 @@ export default function App() {
         aoMostrarToast={mostrarToast}
       />
 
-      <NovoClienteModal
+      <ClienteModal
         aberto={novoClienteAberto}
+        clientes={clientes}
         aoFechar={() => setNovoClienteAberto(false)}
-        aoCadastrar={cadastrarClienteDaTelaClientes}
+        aoSalvar={cadastrarClienteDaTelaClientes}
+        aoUsarExistente={(c) => { setNovoClienteAberto(false); abrirFicha(c.id) }}
       />
     </div>
   )

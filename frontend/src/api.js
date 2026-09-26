@@ -20,6 +20,7 @@ async function enviar(metodo, path, corpo) {
     const texto = await resposta.text().catch(() => '')
     throw new Error(texto || `Erro ao enviar ${path}: ${resposta.status}`)
   }
+  if (resposta.status === 204) return null
   return resposta.json()
 }
 
@@ -35,6 +36,8 @@ export const api = {
   buscarClientes: (nome) => get(`/clientes/busca?nome=${encodeURIComponent(nome)}`),
   cliente: (id) => get(`/clientes/${id}`),
   cadastrarCliente: (dados) => post('/clientes', dados),
+  editarCliente: (id, dados) => enviar('PUT', `/clientes/${id}`, dados),
+  excluirCliente: (id) => enviar('DELETE', `/clientes/${id}`),
   registrarLancamento: (id, dados) => post(`/clientes/${id}/lancamentos`, dados),
   editarLancamento: (id, dados) => enviar('PUT', `/lancamentos/${id}`, dados),
   apagarLancamento: (id) => enviar('DELETE', `/lancamentos/${id}`),

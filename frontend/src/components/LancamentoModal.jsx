@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora } from '../format'
 import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
-import NovoClienteModal from './NovoClienteModal'
+import ClienteModal from './ClienteModal'
 import ReciboCard from './ReciboCard'
 import MicButton from './MicButton'
 
@@ -26,7 +26,8 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
 
   useEffect(() => {
     if (!aberto) return
-    setClienteId(clienteInicialId ?? clientes[0]?.id ?? null)
+    // Sem cliente pré-escolhido: evita anotar na pessoa errada sem perceber.
+    setClienteId(clienteInicialId ?? null)
     setTipo(tipoInicial || 'fiado')
     setValor('')
     setDescricao('')
@@ -221,7 +222,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
           >
             {clienteAtual ? iniciais(clienteAtual.nome) : '--'}
           </span>
-          <span className="who-tx">Cliente<b>{clienteAtual ? clienteAtual.nome : '—'}</b></span>
+          <span className="who-tx">Cliente<b>{clienteAtual ? clienteAtual.nome : 'Escolha o cliente'}</b></span>
           <span className="chev">trocar ⌄</span>
         </button>
 
@@ -252,7 +253,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                     </span>
                     <div className="info">
                       <div className="nm">{c.nome}</div>
-                      <div className="sub">{Number(c.saldoDevedor) > 0 ? `deve ${fmt(c.saldoDevedor)}` : 'em dia'}</div>
+                      <div className="sub">{Number(c.saldoDevedor) > 0 ? `deve ${fmt(c.saldoDevedor)}` : 'em dia'} · {c.telefone}</div>
                     </div>
                   </div>
                 ))}
@@ -280,11 +281,11 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
             </div>
             <button
               className="cf"
-              style={{ background: tipo === 'fiado' ? 'var(--debt)' : 'var(--paid)' }}
-              onClick={salvar}
+              style={{ background: !clienteAtual ? 'var(--muted)' : tipo === 'fiado' ? 'var(--debt)' : 'var(--paid)' }}
+              onClick={clienteAtual ? salvar : () => setPickerAberto(true)}
               disabled={salvando}
             >
-              {salvando ? 'Salvando…' : tipo === 'fiado' ? 'Registrar fiado' : 'Registrar pagamento'}
+              {salvando ? 'Salvando…' : !clienteAtual ? 'Escolha o cliente primeiro' : tipo === 'fiado' ? 'Registrar fiado' : 'Registrar pagamento'}
             </button>
           </div>
         )}
@@ -292,10 +293,12 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         )}
       </div>
 
-      <NovoClienteModal
+      <ClienteModal
         aberto={novoClienteAberto}
+        clientes={clientesEfetivos}
         aoFechar={() => setNovoClienteAberto(false)}
-        aoCadastrar={cadastrarClienteInline}
+        aoSalvar={cadastrarClienteInline}
+        aoUsarExistente={(c) => { setClienteId(c.id); setPickerAberto(false); setNovoClienteAberto(false) }}
       />
     </div>
   )

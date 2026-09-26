@@ -41,6 +41,11 @@ public class Cliente {
         this.telefone = telefone;
     }
 
+    public void atualizarDados(String nome, String telefone) {
+        this.nome = nome;
+        this.telefone = telefone;
+    }
+
     public void adicionarLancamentos(Lancamento lancamento) {
         lancamentos.add(lancamento);
     }

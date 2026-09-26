@@ -93,3 +93,12 @@ export function dataRelativa(dataISO) {
   const [, mes, dia] = dataISO.split('-')
   return `${dia}/${mes}`
 }
+
+// Para comparar nomes sem ligar para maiúsculas, acentos e espaços sobrando.
+export function normalizarNome(nome) {
+  return nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+export function soDigitos(valor) {
+  return (valor || '').replace(/\D/g, '')
+}

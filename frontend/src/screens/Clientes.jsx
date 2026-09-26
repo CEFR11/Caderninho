@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { fmt, iniciais, corAvatar } from '../format'
+import { fmt, iniciais, corAvatar, soDigitos } from '../format'
 import MicButton from '../components/MicButton'
 
 const FILTROS = [
@@ -27,7 +27,9 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
   if (carregando) return <div className="screen"><div className="estado">Carregando…</div></div>
   if (erro) return <div className="screen"><div className="estado erro">{erro}</div></div>
 
-  let lista = clientes.filter((c) => c.nome.toLowerCase().includes(busca.toLowerCase()))
+  const digitosBusca = soDigitos(busca)
+  let lista = clientes.filter((c) => c.nome.toLowerCase().includes(busca.toLowerCase())
+    || (digitosBusca.length >= 3 && soDigitos(c.telefone).includes(digitosBusca)))
   if (filtro === 'devendo') lista = lista.filter((c) => Number(c.saldoDevedor) > 0)
   if (filtro === 'quites') lista = lista.filter((c) => Number(c.saldoDevedor) === 0)
   lista = [...lista].sort((a, b) => a.nome.localeCompare(b.nome))
@@ -37,7 +39,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
   return (
     <div className="screen">
       <div className="search">
-        <input placeholder="Buscar por nome..." value={busca} onChange={(e) => setBusca(e.target.value)} />
+        <input placeholder="Buscar por nome ou telefone..." value={busca} onChange={(e) => setBusca(e.target.value)} />
         <MicButton aoOuvir={setBusca} />
       </div>
 
@@ -72,7 +74,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
                 <div className="av" style={{ background: corAvatar(c.id) }}>{iniciais(c.nome)}</div>
                 <div className="info">
                   <div className="nm">{c.nome}</div>
-                  <div className="sub">{saldo > 0 ? `deve ${fmt(saldo)}` : 'em dia'}</div>
+                  <div className="sub">{c.telefone}</div>
                 </div>
                 <div className="right">
                   <div className={`sal ${saldo > 0 ? 'dev' : 'zero'}`}>{saldo > 0 ? fmt(saldo) : 'quite'}</div>

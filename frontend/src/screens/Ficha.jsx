@@ -5,13 +5,15 @@ import { linkWhatsApp, mensagemExtrato } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
 import EditarLancamentoModal from '../components/EditarLancamentoModal'
+import ClienteModal from '../components/ClienteModal'
 
-export default function Ficha({ clienteId, refreshKey, embutida = false, aoVoltar, aoAbrirLancamento, aoEditarLancamento, aoApagarLancamento, aoMostrarToast }) {
+export default function Ficha({ clienteId, refreshKey, embutida = false, aoVoltar, aoAbrirLancamento, aoEditarLancamento, aoApagarLancamento, clientes, aoEditarCliente, aoExcluirCliente, aoMostrarToast }) {
   const [cliente, setCliente] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
   const [compartilhando, setCompartilhando] = useState(false)
   const [editando, setEditando] = useState(null)
+  const [editandoCliente, setEditandoCliente] = useState(false)
   const reciboRef = useRef(null)
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
       {!embutida && <button className="back" onClick={aoVoltar}>← Clientes</button>}
 
       <div className="ficha-head">
+        <button className="editar-cliente" onClick={() => setEditandoCliente(true)}>Editar</button>
         <div className="av" style={{ background: corAvatar(cliente.id) }}>{iniciais(cliente.nome)}</div>
         <div className="nm">{cliente.nome}</div>
         <div className="tel">{cliente.telefone}</div>
@@ -106,6 +109,15 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
         aoFechar={() => setEditando(null)}
         aoSalvar={async (id, dados) => { await aoEditarLancamento(id, dados); setEditando(null) }}
         aoApagar={async (id) => { await aoApagarLancamento(id); setEditando(null) }}
+      />
+
+      <ClienteModal
+        aberto={editandoCliente}
+        clienteInicial={cliente}
+        clientes={clientes}
+        aoFechar={() => setEditandoCliente(false)}
+        aoSalvar={async (dados) => { await aoEditarCliente(cliente.id, dados); setEditandoCliente(false) }}
+        aoExcluir={async (id) => { await aoExcluirCliente(id); setEditandoCliente(false) }}
       />
     </div>
   )

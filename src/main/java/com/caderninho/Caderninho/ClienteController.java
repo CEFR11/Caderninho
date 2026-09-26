@@ -49,6 +49,18 @@ public class ClienteController {
 
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ClienteDTO> editarCliente(@PathVariable Long id, @Valid @RequestBody NovoClienteDTO dados) {
+        Cliente cliente = clienteRepository.findById(id).orElse(null);
+
+        if (cliente == null) {
+            return ResponseEntity.notFound().build();
+        }
+        cliente.atualizarDados(dados.nome(), dados.telefone());
+        cliente = clienteRepository.save(cliente);
+        return ResponseEntity.ok(clienteService.converterClienteDTO(cliente));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCliente(@PathVariable Long id) {
         Cliente cliente = clienteRepository.findById(id).orElse(null);
