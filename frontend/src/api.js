@@ -10,11 +10,11 @@ async function get(path) {
   return resposta.json()
 }
 
-async function post(path, corpo) {
+async function enviar(metodo, path, corpo) {
   const resposta = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(corpo),
+    method: metodo,
+    headers: corpo ? { 'Content-Type': 'application/json' } : undefined,
+    body: corpo ? JSON.stringify(corpo) : undefined,
   })
   if (!resposta.ok) {
     const texto = await resposta.text().catch(() => '')
@@ -22,6 +22,8 @@ async function post(path, corpo) {
   }
   return resposta.json()
 }
+
+const post = (path, corpo) => enviar('POST', path, corpo)
 
 export const api = {
   resumo: () => get('/financeiro/resumo'),
@@ -34,4 +36,6 @@ export const api = {
   cliente: (id) => get(`/clientes/${id}`),
   cadastrarCliente: (dados) => post('/clientes', dados),
   registrarLancamento: (id, dados) => post(`/clientes/${id}/lancamentos`, dados),
+  editarLancamento: (id, dados) => enviar('PUT', `/lancamentos/${id}`, dados),
+  apagarLancamento: (id) => enviar('DELETE', `/lancamentos/${id}`),
 }

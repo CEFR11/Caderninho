@@ -45,6 +45,10 @@ public class Cliente {
         lancamentos.add(lancamento);
     }
 
+    public void removerLancamento(Lancamento lancamento) {
+        lancamentos.remove(lancamento);
+    }
+
     public BigDecimal getSaldoDevedor() {
         BigDecimal saldo = BigDecimal.ZERO;
 

@@ -8,7 +8,7 @@ import MicButton from './MicButton'
 
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫']
 
-export default function LancamentoModal({ aberto, clientes, clienteInicialId, tipoInicial, aoFechar, aoRegistrar, aoCadastrarCliente, aoMostrarToast }) {
+export default function LancamentoModal({ aberto, clientes, clienteInicialId, tipoInicial, aoFechar, aoRegistrar, aoDesfazer, aoCadastrarCliente, aoMostrarToast }) {
   const [clienteId, setClienteId] = useState(null)
   const [tipo, setTipo] = useState('fiado')
   const [valor, setValor] = useState('')
@@ -20,6 +20,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const [recemCriado, setRecemCriado] = useState(null)
   const [recibo, setRecibo] = useState(null)
   const [compartilhando, setCompartilhando] = useState(false)
+  const [desfazendo, setDesfazendo] = useState(false)
   const reciboRef = useRef(null)
   const aoTeclarRef = useRef(null)
 
@@ -75,7 +76,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     try {
       const data = dataHojeISO()
       const item = descricao || (tipo === 'fiado' ? 'Fiado' : 'Pagamento')
-      await aoRegistrar(clienteAtual.id, {
+      const clienteAtualizado = await aoRegistrar(clienteAtual.id, {
         tipo: tipo === 'fiado' ? 'FIADO' : 'PAGAMENTO',
         item,
         valorTotal: numero,
@@ -83,7 +84,10 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
       })
       const saldoAntes = Number(clienteAtual.saldoDevedor)
       const saldoDepois = tipo === 'fiado' ? saldoAntes + numero : Math.max(0, saldoAntes - numero)
+      // O lançamento recém-criado é o de maior id na lista devolvida pelo backend.
+      const lancamentoId = Math.max(...clienteAtualizado.lancamentos.map((l) => l.id))
       setRecibo({
+        lancamentoId,
         nome: clienteAtual.nome,
         telefone: clienteAtual.telefone,
         tipo,
@@ -121,6 +125,19 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     if (/^[0-9]$/.test(e.key)) tecla(e.key)
     else if (e.key === ',' || e.key === '.') tecla(',')
     else if (e.key === 'Backspace') tecla('⌫')
+  }
+
+  async function desfazer() {
+    if (desfazendo) return
+    setDesfazendo(true)
+    try {
+      await aoDesfazer(recibo.lancamentoId)
+      aoFechar()
+    } catch {
+      aoMostrarToast('Não foi possível desfazer. Tente pela ficha do cliente.')
+    } finally {
+      setDesfazendo(false)
+    }
   }
 
   const listaPicker = clientesEfetivos
@@ -170,6 +187,9 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
               onClick={aoFechar}
             >
               Fechar
+            </button>
+            <button className="apagar" onClick={desfazer} disabled={desfazendo}>
+              {desfazendo ? 'Desfazendo…' : 'Anotei errado — desfazer'}
             </button>
           </div>
         )}

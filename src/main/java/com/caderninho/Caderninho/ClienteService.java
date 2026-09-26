@@ -18,7 +18,7 @@ public class ClienteService {
 
     public LancamentoDTO converterLancamento(Lancamento l) {
 
-        return new LancamentoDTO(l.getTipo(), l.getItem(), l.getValorTotal(), l.getData());
+        return new LancamentoDTO(l.getId(), l.getTipo(), l.getItem(), l.getValorTotal(), l.getData());
     }
 
     public ClienteDTO converterClienteDTO(Cliente cliente) {
@@ -50,6 +50,31 @@ public class ClienteService {
         cliente.adicionarLancamentos(lancamento);
         return cliente;
 
+    }
+
+    public Cliente editarLancamento(Long lancamentoId, NovoLancamentoDTO dados) {
+        Lancamento lancamento = lancamentoRepository.findById(lancamentoId).orElse(null);
+
+        if (lancamento == null) {
+            return null;
+        }
+
+        lancamento.atualizar(dados.tipo(), dados.item(), dados.valorTotal(), dados.data());
+        lancamentoRepository.save(lancamento);
+        return lancamento.getCliente();
+    }
+
+    public Cliente apagarLancamento(Long lancamentoId) {
+        Lancamento lancamento = lancamentoRepository.findById(lancamentoId).orElse(null);
+
+        if (lancamento == null) {
+            return null;
+        }
+
+        Cliente cliente = lancamento.getCliente();
+        cliente.removerLancamento(lancamento);
+        lancamentoRepository.delete(lancamento);
+        return cliente;
     }
 }
 

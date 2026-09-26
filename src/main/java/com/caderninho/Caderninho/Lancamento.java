@@ -36,6 +36,17 @@ public class Lancamento {
         this.data = data;
     }
 
+    public void atualizar(TipoLancamento tipo, String item, BigDecimal valorTotal, LocalDate data) {
+        this.tipo = tipo;
+        this.item = item;
+        this.valorTotal = valorTotal;
+        this.data = data;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
     public TipoLancamento getTipo() {
 
         return tipo;

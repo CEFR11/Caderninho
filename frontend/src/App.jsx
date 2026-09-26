@@ -46,9 +46,22 @@ export default function App() {
   }
 
   async function registrarLancamento(clienteId, dados) {
-    await api.registrarLancamento(clienteId, dados)
+    const clienteAtualizado = await api.registrarLancamento(clienteId, dados)
     setRefreshKey((k) => k + 1)
     mostrarToast(dados.tipo === 'FIADO' ? 'Fiado registrado' : 'Pagamento registrado')
+    return clienteAtualizado
+  }
+
+  async function editarLancamento(id, dados) {
+    await api.editarLancamento(id, dados)
+    setRefreshKey((k) => k + 1)
+    mostrarToast('Anotação corrigida')
+  }
+
+  async function apagarLancamento(id, mensagem = 'Anotação apagada') {
+    await api.apagarLancamento(id)
+    setRefreshKey((k) => k + 1)
+    mostrarToast(mensagem)
   }
 
   async function cadastrarCliente(dados) {
@@ -75,6 +88,8 @@ export default function App() {
         refreshKey={refreshKey}
         aoVoltar={() => setTela('clientes')}
         aoAbrirLancamento={abrirLancamento}
+        aoEditarLancamento={editarLancamento}
+        aoApagarLancamento={apagarLancamento}
         aoMostrarToast={mostrarToast}
       />
     ),
@@ -100,6 +115,8 @@ export default function App() {
                 clienteId={clienteFichaId}
                 refreshKey={refreshKey}
                 aoAbrirLancamento={abrirLancamento}
+                aoEditarLancamento={editarLancamento}
+                aoApagarLancamento={apagarLancamento}
                 aoMostrarToast={mostrarToast}
               />
             )
@@ -149,6 +166,7 @@ export default function App() {
         tipoInicial={modal.tipo}
         aoFechar={fecharLancamento}
         aoRegistrar={registrarLancamento}
+        aoDesfazer={(id) => apagarLancamento(id, 'Anotação desfeita')}
         aoCadastrarCliente={cadastrarCliente}
         aoMostrarToast={mostrarToast}
       />

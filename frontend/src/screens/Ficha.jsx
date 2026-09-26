@@ -4,12 +4,14 @@ import { fmt, iniciais, corAvatar, dataRelativa, dataHoraAgora } from '../format
 import { linkWhatsApp, mensagemExtrato } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
+import EditarLancamentoModal from '../components/EditarLancamentoModal'
 
-export default function Ficha({ clienteId, refreshKey, embutida = false, aoVoltar, aoAbrirLancamento, aoMostrarToast }) {
+export default function Ficha({ clienteId, refreshKey, embutida = false, aoVoltar, aoAbrirLancamento, aoEditarLancamento, aoApagarLancamento, aoMostrarToast }) {
   const [cliente, setCliente] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
   const [compartilhando, setCompartilhando] = useState(false)
+  const [editando, setEditando] = useState(null)
   const reciboRef = useRef(null)
 
   useEffect(() => {
@@ -82,12 +84,13 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
       </div>
 
       <div className="eyebrow">Extrato completo</div>
+      {extrato.length > 0 && <div className="dica">Anotou errado? Toque no item para corrigir ou apagar.</div>}
       {extrato.length === 0
         ? <div className="empty">Sem lançamentos ainda.</div>
         : extrato.map((l, idx) => {
           const ehFiado = l.tipo === 'FIADO'
           return (
-            <div className="ext" key={idx}>
+            <div className="ext clicavel" key={l.id ?? idx} onClick={() => setEditando(l)}>
               <span className={`dot ${ehFiado ? 'debt' : 'paid'}`} />
               <div className="b">
                 <div className="it">{l.item}</div>
@@ -97,6 +100,13 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
             </div>
           )
         })}
+
+      <EditarLancamentoModal
+        lancamento={editando}
+        aoFechar={() => setEditando(null)}
+        aoSalvar={async (id, dados) => { await aoEditarLancamento(id, dados); setEditando(null) }}
+        aoApagar={async (id) => { await aoApagarLancamento(id); setEditando(null) }}
+      />
     </div>
   )
 }
