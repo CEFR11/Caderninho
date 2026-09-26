@@ -8,13 +8,17 @@ import MicButton from './MicButton'
 
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫']
 
-export default function LancamentoModal({ aberto, clientes, clienteInicialId, tipoInicial, aoFechar, aoRegistrar, aoDesfazer, aoCadastrarCliente, aoMostrarToast }) {
+export default function LancamentoModal({ aberto, clientes, clienteInicialId, tipoInicial, fiadoAlvo, aoFechar, aoRegistrar, aoDesfazer, aoCadastrarCliente, aoMostrarToast }) {
   const [clienteId, setClienteId] = useState(null)
   const [tipo, setTipo] = useState('fiado')
   const [valor, setValor] = useState('')
   const [descricao, setDescricao] = useState('')
   const [data, setData] = useState(dataHojeISO())
   const [vencimento, setVencimento] = useState('')
+  // Peças já adicionadas neste fiado ("+ outra peça"); a que está sendo digitada entra no fim.
+  const [pecas, setPecas] = useState([])
+  // Peça que o pagamento vai abater (vem do "Pagou esta" da ficha; pode ser desligada).
+  const [alvo, setAlvo] = useState(null)
   const [erroSalvar, setErroSalvar] = useState(null)
   const [confirmarExcedente, setConfirmarExcedente] = useState(false)
   const [pickerAberto, setPickerAberto] = useState(false)
@@ -33,7 +37,9 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     // Sem cliente pré-escolhido: evita anotar na pessoa errada sem perceber.
     setClienteId(clienteInicialId ?? null)
     setTipo(tipoInicial || 'fiado')
-    setValor('')
+    setValor(fiadoAlvo ? paraDigitado(fiadoAlvo.restante) : '')
+    setAlvo(fiadoAlvo ?? null)
+    setPecas([])
     setDescricao('')
     setData(dataHojeISO())
     setVencimento('')
@@ -43,7 +49,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     setBuscaPicker('')
     setRecemCriado(null)
     setRecibo(null)
-  }, [aberto, clienteInicialId, tipoInicial])
+  }, [aberto, clienteInicialId, tipoInicial, fiadoAlvo])
 
   // Teclado físico (útil no computador): a função muda a cada render, então o listener
   // chama sempre a versão mais recente pela ref.
@@ -80,9 +86,23 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   }
 
   const saldoAtual = clienteAtual ? Number(clienteAtual.saldoDevedor) : 0
+  const totalPecas = pecas.reduce((soma, p) => soma + p.valor, 0)
+
+  function adicionarPeca() {
+    const numero = valorDigitado(valor)
+    if (numero <= 0) return
+    setPecas((lista) => [...lista, { item: descricao.trim() || `Peça ${lista.length + 1}`, valor: numero }])
+    setValor('')
+    setDescricao('')
+  }
 
   async function salvar(valorForcado = null) {
-    const numero = valorForcado ?? valorDigitado(valor)
+    const digitado = valorForcado ?? valorDigitado(valor)
+    // No fiado, junta as peças já adicionadas com a que está digitada agora.
+    const itens = tipo === 'fiado'
+      ? [...pecas, ...(digitado > 0 ? [{ item: descricao.trim() || (pecas.length ? `Peça ${pecas.length + 1}` : 'Fiado'), valor: digitado }] : [])]
+      : [{ item: descricao.trim() || 'Pagamento', valor: digitado }]
+    const numero = itens.reduce((soma, i) => soma + i.valor, 0)
     if (numero <= 0 || !clienteAtual || salvando) return
     // Pagamento maior que a dívida: pergunta antes, em vez de deixar o saldo negativo sem querer.
     if (tipo === 'pagamento' && numero > saldoAtual && valorForcado === null) {
@@ -92,23 +112,25 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     setSalvando(true)
     setErroSalvar(null)
     try {
-      const item = descricao || (tipo === 'fiado' ? 'Fiado' : 'Pagamento')
-      const clienteAtualizado = await aoRegistrar(clienteAtual.id, {
+      const clienteAtualizado = await aoRegistrar(clienteAtual.id, itens.map((i) => ({
         tipo: tipo === 'fiado' ? 'FIADO' : 'PAGAMENTO',
-        item,
-        valorTotal: numero,
+        item: i.item,
+        valorTotal: i.valor,
         data,
         vencimento: tipo === 'fiado' && vencimento ? vencimento : null,
-      })
+        fiadoPagoId: tipo === 'pagamento' && alvo ? alvo.id : null,
+      })))
       const saldoDepois = Number(clienteAtualizado.saldoDevedor)
-      // O lançamento recém-criado é o de maior id na lista devolvida pelo backend.
-      const lancamentoId = Math.max(...clienteAtualizado.lancamentos.map((l) => l.id))
+      // As anotações recém-criadas são as de maior id na lista devolvida pelo backend.
+      const lancamentoIds = clienteAtualizado.lancamentos.map((l) => l.id).sort((a, b) => b - a).slice(0, itens.length)
       setRecibo({
-        lancamentoId,
+        lancamentoIds,
         nome: clienteAtual.nome,
         telefone: clienteAtual.telefone,
         tipo,
-        item,
+        item: itens.map((i) => i.item).join(' + '),
+        itens,
+        pecaPaga: tipo === 'pagamento' && alvo ? alvo.item : null,
         valor: numero,
         data,
         vencimento: tipo === 'fiado' ? (vencimento || vencimentoPadrao(data, clienteAtual.diaPagamento)) : null,
@@ -151,7 +173,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     if (desfazendo) return
     setDesfazendo(true)
     try {
-      await aoDesfazer(recibo.lancamentoId)
+      await aoDesfazer(recibo.lancamentoIds)
       aoFechar()
     } catch {
       aoMostrarToast('Não foi possível desfazer. Tente pela ficha do cliente.')
@@ -223,6 +245,8 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 nome: recibo.nome,
                 data: recibo.data,
                 item: recibo.item,
+                itens: recibo.itens,
+                pecaPaga: recibo.pecaPaga,
                 tipoLancamento: recibo.tipo,
                 valor: recibo.valor,
                 vencimento: recibo.vencimento,
@@ -284,9 +308,34 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         {!pickerAberto && (
           <div className="lanc-body">
             <div className="seg">
-              <button className={tipo === 'fiado' ? 'on-d' : ''} onClick={() => { setTipo('fiado'); setConfirmarExcedente(false) }}>FIADO</button>
-              <button className={tipo === 'pagamento' ? 'on-p' : ''} onClick={() => setTipo('pagamento')}>PAGAMENTO</button>
+              <button className={tipo === 'fiado' ? 'on-d' : ''} onClick={() => { setTipo('fiado'); setConfirmarExcedente(false); setAlvo(null) }}>FIADO</button>
+              <button
+                className={tipo === 'pagamento' ? 'on-p' : ''}
+                onClick={() => setTipo('pagamento')}
+                disabled={pecas.length > 0}
+                title={pecas.length > 0 ? 'Termine ou tire as peças do fiado antes' : undefined}
+              >
+                PAGAMENTO
+              </button>
             </div>
+            {tipo === 'fiado' && pecas.length > 0 && (
+              <div className="pecas">
+                {pecas.map((p, idx) => (
+                  <div className="peca" key={idx}>
+                    <span className="n">{p.item}</span>
+                    <span className="v">{fmt(p.valor)}</span>
+                    <button className="limpar-data" onClick={() => setPecas((lista) => lista.filter((_, i) => i !== idx))} aria-label="Tirar peça">✕</button>
+                  </div>
+                ))}
+                <div className="peca-total">Até agora: {fmt(totalPecas)} · digite a próxima peça ou anote</div>
+              </div>
+            )}
+            {tipo === 'pagamento' && alvo && (
+              <div className="alvo-peca">
+                <span>Abatendo <b>{alvo.item}</b> · falta {fmt(alvo.restante)}</span>
+                <button className="limpar-data" onClick={() => setAlvo(null)} aria-label="Não ligar a uma peça">✕</button>
+              </div>
+            )}
             <div className="amt-d">{valor ? `R$ ${valor}` : 'R$ 0,00'}</div>
             {tipo === 'pagamento' && saldoAtual > 0 && (
               <button className="pagou-tudo" onClick={() => { setValor(paraDigitado(saldoAtual)); setConfirmarExcedente(false) }}>
@@ -301,6 +350,11 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
               />
               <MicButton aoOuvir={(texto) => setDescricao(texto.charAt(0).toUpperCase() + texto.slice(1))} />
             </div>
+            {tipo === 'fiado' && (
+              <button className="outra-peca" onClick={adicionarPeca} disabled={valorDigitado(valor) <= 0}>
+                + outra peça
+              </button>
+            )}
             <div className="data-linha">
               <span>Quando foi?</span>
               <input type="date" value={data} max={dataHojeISO()} onChange={(e) => setData(e.target.value || dataHojeISO())} />
@@ -347,7 +401,11 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
               onClick={clienteAtual ? () => salvar() : () => setPickerAberto(true)}
               disabled={salvando || confirmarExcedente}
             >
-              {salvando ? 'Salvando…' : !clienteAtual ? 'Escolha o cliente primeiro' : tipo === 'fiado' ? 'Anotar fiado' : 'Anotar pagamento'}
+              {salvando ? 'Salvando…'
+                : !clienteAtual ? 'Escolha o cliente primeiro'
+                  : tipo === 'pagamento' ? 'Anotar pagamento'
+                    : pecas.length === 0 ? 'Anotar fiado'
+                      : `Anotar ${pecas.length + (valorDigitado(valor) > 0 ? 1 : 0)} peças · ${fmt(totalPecas + valorDigitado(valor))}`}
             </button>
           </div>
         )}

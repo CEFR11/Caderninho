@@ -39,6 +39,7 @@ export const api = {
   editarCliente: (id, dados) => enviar('PUT', `/clientes/${id}`, dados),
   excluirCliente: (id) => enviar('DELETE', `/clientes/${id}`),
   registrarLancamento: (id, dados) => post(`/clientes/${id}/lancamentos`, dados),
+  registrarVarios: (id, lancamentos) => post(`/clientes/${id}/lancamentos/varios`, { lancamentos }),
   editarLancamento: (id, dados) => enviar('PUT', `/lancamentos/${id}`, dados),
   apagarLancamento: (id) => enviar('DELETE', `/lancamentos/${id}`),
 }

@@ -28,6 +28,10 @@ public class Lancamento {
     @ManyToOne
     private Cliente cliente;
 
+    // Em um pagamento: o fiado (peça) que ele está pagando. Nulo = abate dos fiados mais antigos.
+    @ManyToOne
+    private Lancamento fiadoPago;
+
     protected Lancamento() {
 
     }
@@ -52,6 +56,14 @@ public class Lancamento {
 
     public void setVencimento(LocalDate vencimento) {
         this.vencimento = vencimento;
+    }
+
+    public Lancamento getFiadoPago() {
+        return fiadoPago;
+    }
+
+    public void setFiadoPago(Lancamento fiadoPago) {
+        this.fiadoPago = fiadoPago;
     }
 
     public Long getId() {

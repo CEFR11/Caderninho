@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import { iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta, rotuloSaldo, valorSaldo, anotacoesEmAberto, situacaoVencimento } from '../format'
+import { iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta, rotuloSaldo, valorSaldo, pecasEmAberto, situacaoVencimento, fmt } from '../format'
 import { linkWhatsApp, mensagemExtrato, mensagemCobranca } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
@@ -97,7 +97,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
       <div style={{ position: 'fixed', top: 0, left: -9999, zIndex: -1 }}>
         <ReciboCard
           ref={reciboRef}
-          dados={{ modo: 'extrato', nome: cliente.nome, itens: anotacoesEmAberto(cliente.lancamentos), saldo, emitidoEm: dataHoraAgora() }}
+          dados={{ modo: 'extrato', nome: cliente.nome, itens: pecasEmAberto(cliente.lancamentos), saldo, emitidoEm: dataHoraAgora() }}
         />
       </div>
 
@@ -107,13 +107,31 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
         ? <div className="empty">Nenhuma anotação ainda.</div>
         : extrato.map((l, idx) => {
           const ehFiado = l.tipo === 'FIADO'
+          const restante = Number(l.restante)
+          const quitada = ehFiado && restante === 0
+          const pecaAbatida = !ehFiado && l.fiadoPagoId && cliente.lancamentos.find((f) => f.id === l.fiadoPagoId)
+          const detalhes = [
+            dataRelativa(l.data),
+            ehFiado && quitada && '✓ paga',
+            ehFiado && !quitada && restante < Number(l.valorTotal) && `falta ${fmt(restante)}`,
+            ehFiado && !quitada && l.vencimento && `pagar até ${dataCurta(l.vencimento)}`,
+            pecaAbatida && `abateu ${pecaAbatida.item}`,
+          ].filter(Boolean).join(' · ')
           return (
-            <div className="ext clicavel" key={l.id ?? idx} onClick={() => setEditando(l)}>
+            <div className={`ext clicavel ${quitada ? 'quitada' : ''}`} key={l.id ?? idx} onClick={() => setEditando(l)}>
               <span className={`dot ${ehFiado ? 'debt' : 'paid'}`} />
               <div className="b">
                 <div className="it">{l.item}</div>
-                <div className="dt">{dataRelativa(l.data)}{l.vencimento ? ` · pagar até ${dataCurta(l.vencimento)}` : ''}</div>
+                <div className="dt">{detalhes}</div>
               </div>
+              {ehFiado && !quitada && (
+                <button
+                  className="pagou-esta"
+                  onClick={(e) => { e.stopPropagation(); aoAbrirLancamento('pagamento', cliente.id, { id: l.id, item: l.item, restante }) }}
+                >
+                  Pagou esta
+                </button>
+              )}
               <ValorAnotacao tipo={l.tipo} valor={l.valorTotal} />
             </div>
           )

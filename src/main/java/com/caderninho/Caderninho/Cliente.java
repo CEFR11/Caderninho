@@ -7,7 +7,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -73,29 +75,51 @@ public class Cliente {
         return saldo;
     }
 
-    // Fiados ainda não totalmente pagos, do mais antigo para o mais novo.
-    // Como num caderno, os pagamentos abatem primeiro os fiados mais antigos.
-    private List<Lancamento> getFiadosEmAberto() {
-        BigDecimal pago = lancamentos.stream()
-                .filter(l -> l.getTipo() == TipoLancamento.PAGAMENTO)
-                .map(Lancamento::getValorTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    private static final Comparator<Lancamento> POR_DATA = Comparator.comparing(Lancamento::getData)
+            .thenComparing(Lancamento::getId, Comparator.nullsLast(Comparator.naturalOrder()));
 
+    // Quanto falta pagar de cada fiado (na ordem do mais antigo para o mais novo).
+    // Pagamento ligado a uma peça abate dela primeiro; o que sobra, e os pagamentos sem peça escolhida,
+    // abatem dos fiados mais antigos, como num caderno.
+    public Map<Lancamento, BigDecimal> getRestantePorFiado() {
         List<Lancamento> fiados = lancamentos.stream()
                 .filter(l -> l.getTipo() == TipoLancamento.FIADO)
-                .sorted(Comparator.comparing(Lancamento::getData)
-                        .thenComparing(Lancamento::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+                .sorted(POR_DATA)
+                .toList();
+        List<Lancamento> pagamentos = lancamentos.stream()
+                .filter(l -> l.getTipo() == TipoLancamento.PAGAMENTO)
+                .sorted(POR_DATA)
                 .toList();
 
-        for (int i = 0; i < fiados.size(); i++) {
-            Lancamento fiado = fiados.get(i);
-            if (pago.compareTo(fiado.getValorTotal()) >= 0) {
-                pago = pago.subtract(fiado.getValorTotal());
-            } else {
-                return fiados.subList(i, fiados.size());
+        Map<Lancamento, BigDecimal> restante = new LinkedHashMap<>();
+        fiados.forEach(f -> restante.put(f, f.getValorTotal()));
+
+        BigDecimal livre = BigDecimal.ZERO;
+        for (Lancamento pagamento : pagamentos) {
+            BigDecimal valor = pagamento.getValorTotal();
+            Lancamento alvo = pagamento.getFiadoPago();
+            if (alvo != null && restante.containsKey(alvo)) {
+                BigDecimal abatido = valor.min(restante.get(alvo));
+                restante.put(alvo, restante.get(alvo).subtract(abatido));
+                valor = valor.subtract(abatido);
             }
+            livre = livre.add(valor);
         }
-        return List.of();
+
+        for (Lancamento fiado : fiados) {
+            BigDecimal abatido = livre.min(restante.get(fiado));
+            restante.put(fiado, restante.get(fiado).subtract(abatido));
+            livre = livre.subtract(abatido);
+        }
+        return restante;
+    }
+
+    // Fiados ainda não totalmente pagos, do mais antigo para o mais novo.
+    private List<Lancamento> getFiadosEmAberto() {
+        return getRestantePorFiado().entrySet().stream()
+                .filter(e -> e.getValue().signum() > 0)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     // O cliente "deve desde" a data do fiado mais antigo que ainda não foi totalmente pago.

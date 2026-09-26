@@ -47,8 +47,20 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
         {dados.modo === 'transacao' ? (
           <>
             <LinhaRotulo rotulo="Data" valor={dataCurta(dados.data)} />
-            <LinhaRotulo rotulo="Item" valor={dados.item} />
-            <LinhaRotulo rotulo={dados.tipoLancamento === 'fiado' ? 'Fiado' : 'Pagamento'} valor={fmt(dados.valor)} destaque />
+            {dados.itens?.length > 1
+              ? (
+                <>
+                  {dados.itens.map((i, idx) => <LinhaRotulo key={idx} rotulo={i.item} valor={fmt(i.valor)} />)}
+                  <LinhaRotulo rotulo="Total fiado" valor={fmt(dados.valor)} destaque />
+                </>
+              )
+              : (
+                <>
+                  <LinhaRotulo rotulo="Item" valor={dados.item} />
+                  <LinhaRotulo rotulo={dados.tipoLancamento === 'fiado' ? 'Fiado' : 'Pagamento'} valor={fmt(dados.valor)} destaque />
+                </>
+              )}
+            {dados.pecaPaga && <LinhaRotulo rotulo="Abateu" valor={dados.pecaPaga} />}
             {dados.vencimento && <LinhaRotulo rotulo="Pagar até" valor={dataCurta(dados.vencimento)} />}
           </>
         ) : (
@@ -65,7 +77,7 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>{l.item}</div>
                   <div style={{ fontSize: 11, color: '#7B819A', marginTop: 1 }}>
-                    {dataCurta(l.data)} · {l.tipo === 'FIADO' ? 'Fiado' : 'Pagou'}
+                    {dataCurta(l.data)}{l.valorOriginal && l.valorOriginal !== l.valorTotal ? ` · falta, de ${fmt(l.valorOriginal)}` : ''}{l.vencimento ? ` · pagar até ${dataCurta(l.vencimento)}` : ''}
                   </div>
                 </div>
                 <div style={{

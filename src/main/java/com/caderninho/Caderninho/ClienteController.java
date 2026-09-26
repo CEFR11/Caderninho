@@ -89,6 +89,16 @@ public class ClienteController {
 
     }
 
+    @PostMapping("/{id}/lancamentos/varios")
+    public ResponseEntity<ClienteDTO> variosLancamentos(@PathVariable Long id, @Valid @RequestBody NovosLancamentosDTO novos) {
+        Cliente cliente = clienteService.registrarVarios(id, novos);
+
+        if (cliente == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(clienteService.converterClienteDTO(cliente));
+    }
+
     @GetMapping("/busca")
     public ResponseEntity<List<ClienteDTO>> buscarPorNome(@RequestParam String nome) {
 

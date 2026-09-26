@@ -122,19 +122,13 @@ export function paraDigitado(numero) {
   return Number(numero).toFixed(2).replace('.', ',')
 }
 
-// Só o que o cliente ainda está pagando: as anotações depois da última vez que a conta zerou.
-// Devolve da mais recente para a mais antiga.
-export function anotacoesEmAberto(lancamentos) {
-  const ordenados = [...lancamentos].sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : (a.id ?? 0) - (b.id ?? 0)))
-  let saldo = 0
-  let inicio = 0
-  ordenados.forEach((l, i) => {
-    saldo += l.tipo === 'FIADO' ? Number(l.valorTotal) : -Number(l.valorTotal)
-    // A conta só "fecha" no fim do dia: no mesmo dia a ordem de anotação não quer dizer nada.
-    const ultimoDoDia = i === ordenados.length - 1 || ordenados[i + 1].data !== l.data
-    if (ultimoDoDia && saldo <= 0) inicio = i + 1
-  })
-  return ordenados.slice(inicio).reverse()
+// Peças (fiados) que ainda falta pagar, da mais antiga para a mais nova. O backend calcula o
+// "restante" de cada fiado: pagamento ligado a uma peça abate dela; o resto abate das mais antigas.
+export function pecasEmAberto(lancamentos) {
+  return lancamentos
+    .filter((l) => l.tipo === 'FIADO' && Number(l.restante) > 0)
+    .sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : (a.id ?? 0) - (b.id ?? 0)))
+    .map((l) => ({ ...l, valorTotal: Number(l.restante), valorOriginal: Number(l.valorTotal) }))
 }
 
 // Dias de hoje até a data (negativo se já passou).

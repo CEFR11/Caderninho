@@ -18,7 +18,7 @@ export default function App() {
   const [clienteFichaId, setClienteFichaId] = useState(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [clientes, setClientes] = useState([])
-  const [modal, setModal] = useState({ aberto: false, clienteId: null, tipo: 'fiado' })
+  const [modal, setModal] = useState({ aberto: false, clienteId: null, tipo: 'fiado', fiadoAlvo: null })
   const [novoClienteAberto, setNovoClienteAberto] = useState(false)
   const [toast, setToast] = useState('')
   const ehDesktop = useEhDesktop()
@@ -32,8 +32,9 @@ export default function App() {
     setTela('ficha')
   }
 
-  function abrirLancamento(tipo, clienteId = null) {
-    setModal({ aberto: true, clienteId, tipo })
+  // fiadoAlvo: a peça que o pagamento vai abater (botão "Pagou esta" da ficha).
+  function abrirLancamento(tipo, clienteId = null, fiadoAlvo = null) {
+    setModal({ aberto: true, clienteId, tipo, fiadoAlvo })
   }
 
   function fecharLancamento() {
@@ -45,10 +46,11 @@ export default function App() {
     setTimeout(() => setToast(''), 1700)
   }
 
-  async function registrarLancamento(clienteId, dados) {
-    const clienteAtualizado = await api.registrarLancamento(clienteId, dados)
+  // lista: uma ou mais anotações do mesmo cliente (várias peças no mesmo fiado).
+  async function registrarLancamento(clienteId, lista) {
+    const clienteAtualizado = await api.registrarVarios(clienteId, lista)
     setRefreshKey((k) => k + 1)
-    mostrarToast(dados.tipo === 'FIADO' ? 'Fiado anotado' : 'Pagamento anotado')
+    mostrarToast(lista[0].tipo === 'FIADO' ? (lista.length > 1 ? `${lista.length} peças anotadas` : 'Fiado anotado') : 'Pagamento anotado')
     return clienteAtualizado
   }
 
@@ -56,6 +58,14 @@ export default function App() {
     await api.editarLancamento(id, dados)
     setRefreshKey((k) => k + 1)
     mostrarToast('Anotação corrigida')
+  }
+
+  async function desfazerAnotacoes(ids) {
+    for (const id of ids) {
+      await api.apagarLancamento(id)
+    }
+    setRefreshKey((k) => k + 1)
+    mostrarToast('Anotação desfeita')
   }
 
   async function apagarLancamento(id, mensagem = 'Anotação apagada') {
@@ -184,9 +194,10 @@ export default function App() {
         clientes={clientes}
         clienteInicialId={modal.clienteId}
         tipoInicial={modal.tipo}
+        fiadoAlvo={modal.fiadoAlvo}
         aoFechar={fecharLancamento}
         aoRegistrar={registrarLancamento}
-        aoDesfazer={(id) => apagarLancamento(id, 'Anotação desfeita')}
+        aoDesfazer={desfazerAnotacoes}
         aoCadastrarCliente={cadastrarCliente}
         aoMostrarToast={mostrarToast}
       />
