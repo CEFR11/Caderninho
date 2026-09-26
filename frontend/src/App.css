@@ -265,6 +265,7 @@ body {
 .ficha-sal { background: var(--debt-soft); border-radius: 16px; padding: 13px; margin-top: 15px; }
 .ficha-sal .l { font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #B0393D; }
 .ficha-sal .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 28px; color: var(--debt); letter-spacing: -1px; margin-top: 2px; }
+.ficha-sal .desde { font-size: 11.5px; color: #B0393D; margin-top: 2px; }
 .acts { display: flex; gap: 9px; margin-top: 13px; }
 .btn {
   flex: 1; border: none; border-radius: 13px; padding: 13px 0; font-family: 'Plus Jakarta Sans'; font-weight: 700;

@@ -88,7 +88,7 @@ public class FinanceiroService {
 
     public List<FilaClienteDTO> gerarFila(String filtro) {
         List<Cliente> clientes = clienteRepository.findAll().stream().filter(c -> c.getSaldoDevedor().compareTo(BigDecimal.ZERO) > 0).toList();
-        List<FilaClienteDTO> filaClienteDTO = clientes.stream().map(c -> new FilaClienteDTO(c.getId(), c.getNome(), c.getSaldoDevedor(), c.getDiasSemPagar())).toList();
+        List<FilaClienteDTO> filaClienteDTO = clientes.stream().map(c -> new FilaClienteDTO(c.getId(), c.getNome(), c.getSaldoDevedor(), c.getDiasDevendo(), c.getDevendoDesde().orElse(null))).toList();
 
         switch (filtro) {
             case "atrasados":
@@ -102,8 +102,8 @@ public class FinanceiroService {
                 return filaClienteDTO.stream().sorted(Comparator.comparing(FilaClienteDTO::dias)).toList();
 
             default:
-
-                return filaClienteDTO.stream().sorted(Comparator.comparing((FilaClienteDTO c) -> c.saldo().multiply(BigDecimal.valueOf(c.dias()))).reversed()).toList();
+                // Valor × idade da dívida. O +1 faz a dívida de hoje ainda contar pelo valor, em vez de ir para o fim.
+                return filaClienteDTO.stream().sorted(Comparator.comparing((FilaClienteDTO c) -> c.saldo().multiply(BigDecimal.valueOf(c.dias() + 1))).reversed()).toList();
 
         }
     }

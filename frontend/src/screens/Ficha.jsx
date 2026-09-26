@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import { fmt, iniciais, corAvatar, dataRelativa, dataHoraAgora } from '../format'
+import { fmt, iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta } from '../format'
 import { linkWhatsApp, mensagemExtrato } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
@@ -55,6 +55,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
         <div className="ficha-sal">
           <div className="l">Saldo devedor</div>
           <div className="v">{fmt(saldo)}</div>
+          {cliente.devendoDesde && <div className="desde">deve desde {dataCurta(cliente.devendoDesde)}</div>}
         </div>
         <div className="acts">
           <button className="btn debt" onClick={() => aoAbrirLancamento('fiado', cliente.id)}>+ Fiado</button>

@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import {api} from '../api'
-import {fmt} from '../format'
+import {fmt, dataCurta} from '../format'
 
 const FILTROS = [
     {id: 'prioridade', label: 'Prioridade'},
@@ -65,7 +65,7 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
                                     <div className="meta">
                                         <span className={`flag ${flagClasse}`}>{flagTexto}</span>
                                         {' '}
-                                        {dias === 0 ? 'sem atraso' : `há ${dias} dias sem pagar`}
+                                        {dias === 0 ? 'deve desde hoje' : `deve desde ${dataCurta(c.devendoDesde)} · ${dias} dia${dias > 1 ? 's' : ''}`}
                                     </div>
                                     <div className={`urg ${urgencia}`}><span style={{width: `${largura}%`}}/></div>
                                 </div>

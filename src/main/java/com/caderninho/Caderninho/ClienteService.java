@@ -29,6 +29,7 @@ public class ClienteService {
                 cliente.getNome(),
                 cliente.getTelefone(),
                 cliente.getSaldoDevedor(),
+                cliente.getDevendoDesde().orElse(null),
                 lancamentoDTO
         );
 

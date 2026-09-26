@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.lang.IllegalStateException;
 
 
 @Entity
@@ -67,24 +66,32 @@ public class Cliente {
         return saldo;
     }
 
-    public long getDiasSemPagar() {
+    // Idade da dívida, como num caderno: os pagamentos abatem primeiro os fiados mais antigos.
+    // O cliente "deve desde" a data do fiado mais antigo que ainda não foi totalmente pago.
+    public Optional<LocalDate> getDevendoDesde() {
+        BigDecimal pago = lancamentos.stream()
+                .filter(l -> l.getTipo() == TipoLancamento.PAGAMENTO)
+                .map(Lancamento::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Optional<LocalDate> ultimoPagamento = lancamentos.stream().filter(lancamento -> lancamento.getTipo() == TipoLancamento.PAGAMENTO).map(Lancamento::getData).max(Comparator.naturalOrder());
-        if (ultimoPagamento.isPresent()) {
-            LocalDate dataAntiga = ultimoPagamento.get();
-            long dias = ChronoUnit.DAYS.between(dataAntiga, LocalDate.now());
-            return dias;
+        List<Lancamento> fiados = lancamentos.stream()
+                .filter(l -> l.getTipo() == TipoLancamento.FIADO)
+                .sorted(Comparator.comparing(Lancamento::getData)
+                        .thenComparing(Lancamento::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+
+        for (Lancamento fiado : fiados) {
+            if (pago.compareTo(fiado.getValorTotal()) >= 0) {
+                pago = pago.subtract(fiado.getValorTotal());
+            } else {
+                return Optional.of(fiado.getData());
+            }
         }
+        return Optional.empty();
+    }
 
-
-        Optional<LocalDate> ultimoFiado = lancamentos.stream().filter(lancamento -> lancamento.getTipo() == TipoLancamento.FIADO).map(Lancamento::getData).min(Comparator.naturalOrder());
-        if (ultimoFiado.isPresent()) {
-            LocalDate dataAntiga = ultimoFiado.get();
-            long dias = ChronoUnit.DAYS.between(dataAntiga, LocalDate.now());
-            return dias;
-        }
-
-        throw new IllegalStateException("Cliente sem historico de lançamentos");
+    public long getDiasDevendo() {
+        return getDevendoDesde().map(desde -> ChronoUnit.DAYS.between(desde, LocalDate.now())).orElse(0L);
     }
 
     public Long getId() {
