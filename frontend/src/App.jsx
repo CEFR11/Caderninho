@@ -8,12 +8,15 @@ import Fiados from './screens/Fiados'
 import Clientes from './screens/Clientes'
 import Financeiro from './screens/Financeiro'
 import Ficha from './screens/Ficha'
-import { api } from './api'
+import Login from './screens/Login'
+import Icone from './components/Icone'
+import { api, estaLogado, sair, EVENTO_SAIU } from './api'
 import { mesEAnoAtual } from './format'
 import { useEhDesktop } from './useEhDesktop'
 import './App.css'
 
 export default function App() {
+  const [logado, setLogado] = useState(estaLogado)
   const [tela, setTela] = useState('inicio')
   const [clienteFichaId, setClienteFichaId] = useState(null)
   // Filtro com que a tela Fiados abre (o cartão "Vence este mês" do Início abre no filtro do mês).
@@ -25,9 +28,17 @@ export default function App() {
   const [toast, setToast] = useState('')
   const ehDesktop = useEhDesktop()
 
+  // Qualquer chamada recusada pelo backend (token vencido ou senha trocada) volta para o login.
   useEffect(() => {
+    const voltarAoLogin = () => setLogado(false)
+    window.addEventListener(EVENTO_SAIU, voltarAoLogin)
+    return () => window.removeEventListener(EVENTO_SAIU, voltarAoLogin)
+  }, [])
+
+  useEffect(() => {
+    if (!logado) return
     api.clientes().then(setClientes).catch(() => {})
-  }, [refreshKey])
+  }, [refreshKey, logado])
 
   function trocarTela(novaTela) {
     setFiltroFiados('prioridade')
@@ -115,6 +126,10 @@ export default function App() {
     setTela('clientes')
   }
 
+  if (!logado) {
+    return <Login aoEntrar={() => { setTela('inicio'); setModal((m) => ({ ...m, aberto: false })); setLogado(true) }} />
+  }
+
   const TELAS = {
     inicio: <Inicio refreshKey={refreshKey} aoVerVenceNoMes={verVenceNoMes} />,
     fiados: <Fiados refreshKey={refreshKey} aoAbrirFicha={abrirFicha} filtroInicial={filtroFiados} />,
@@ -175,7 +190,7 @@ export default function App() {
   return (
     <div className={`app-shell ${ehDesktop ? 'desktop' : ''}`}>
       {ehDesktop && (
-        <Sidebar telaAtual={navAtiva} aoTrocarTela={trocarTela} aoNovoLancamento={() => abrirLancamento('fiado')} />
+        <Sidebar telaAtual={navAtiva} aoTrocarTela={trocarTela} aoNovoLancamento={() => abrirLancamento('fiado')} aoSair={sair} />
       )}
 
       <div className="main">
@@ -188,7 +203,14 @@ export default function App() {
                 <div className="name">Caderninho</div>
               </div>
             )}
-          <div className="month-chip">{mesEAnoAtual()}</div>
+          <div className="topbar-dir">
+            <div className="month-chip">{mesEAnoAtual()}</div>
+            {!ehDesktop && (
+              <button className="topbar-sair" onClick={sair} aria-label="Sair" title="Sair">
+                <Icone nome="sair" />
+              </button>
+            )}
+          </div>
         </div>
 
         {conteudo}

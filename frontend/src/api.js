@@ -2,26 +2,64 @@
 // (celular, outra máquina), defina VITE_API_URL no arquivo .env do frontend.
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
-async function get(path) {
-  const resposta = await fetch(`${BASE_URL}${path}`)
-  if (!resposta.ok) {
-    throw new Error(`Erro ao buscar ${path}: ${resposta.status}`)
-  }
-  return resposta.json()
+// Login: o token fica guardado no aparelho até vencer (30 dias) ou até sair.
+// localStorage pode falhar (aba anônima, dados bloqueados); aí o login só dura até fechar o app.
+const CHAVE_SESSAO = 'caderninho.sessao'
+let sessaoEmMemoria = null
+
+function lerSessao() {
+  try {
+    const salva = localStorage.getItem(CHAVE_SESSAO)
+    if (salva) sessaoEmMemoria = JSON.parse(salva)
+  } catch { /* fica a da memória */ }
+  if (sessaoEmMemoria && new Date(sessaoEmMemoria.expiraEm) <= new Date()) sessaoEmMemoria = null
+  return sessaoEmMemoria
+}
+
+function guardarSessao(sessao) {
+  sessaoEmMemoria = sessao
+  try {
+    if (sessao) localStorage.setItem(CHAVE_SESSAO, JSON.stringify(sessao))
+    else localStorage.removeItem(CHAVE_SESSAO)
+  } catch { /* só na memória */ }
+}
+
+export const estaLogado = () => lerSessao() !== null
+
+// Avisa o App para voltar à tela de login (saiu, ou o backend recusou o token).
+export const EVENTO_SAIU = 'caderninho:saiu'
+
+export function sair() {
+  guardarSessao(null)
+  window.dispatchEvent(new Event(EVENTO_SAIU))
 }
 
 async function enviar(metodo, path, corpo) {
+  const token = lerSessao()?.token
+  const headers = {}
+  if (corpo) headers['Content-Type'] = 'application/json'
+  if (token) headers.Authorization = `Bearer ${token}`
   const resposta = await fetch(`${BASE_URL}${path}`, {
     method: metodo,
-    headers: corpo ? { 'Content-Type': 'application/json' } : undefined,
+    headers,
     body: corpo ? JSON.stringify(corpo) : undefined,
   })
+  if (resposta.status === 401 && path !== '/auth/login') {
+    sair()
+    throw new Error('Entre com a senha para continuar.')
+  }
   if (!resposta.ok) {
     const texto = await resposta.text().catch(() => '')
-    throw new Error(texto || `Erro ao enviar ${path}: ${resposta.status}`)
+    throw new Error(texto || `Erro em ${path}: ${resposta.status}`)
   }
   if (resposta.status === 204) return null
   return resposta.json()
+}
+
+const get = (path) => enviar('GET', path)
+
+export async function entrar(senha) {
+  guardarSessao(await enviar('POST', '/auth/login', { senha }))
 }
 
 const post = (path, corpo) => enviar('POST', path, corpo)

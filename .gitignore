@@ -33,3 +33,5 @@ build/
 .vscode/
 
 /data/
+# Senha e segredo locais (config/application.properties)
+/config/
