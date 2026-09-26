@@ -7,6 +7,7 @@ export default function EditarLancamentoModal({ lancamento, aoFechar, aoSalvar, 
   const [valor, setValor] = useState('')
   const [item, setItem] = useState('')
   const [data, setData] = useState('')
+  const [vencimento, setVencimento] = useState('')
   const [erro, setErro] = useState(null)
   const [ocupado, setOcupado] = useState(false)
   const [confirmandoApagar, setConfirmandoApagar] = useState(false)
@@ -17,6 +18,7 @@ export default function EditarLancamentoModal({ lancamento, aoFechar, aoSalvar, 
     setValor(String(lancamento.valorTotal).replace('.', ','))
     setItem(lancamento.item)
     setData(lancamento.data)
+    setVencimento(lancamento.vencimento ?? '')
     setErro(null)
     setConfirmandoApagar(false)
   }, [lancamento])
@@ -32,7 +34,7 @@ export default function EditarLancamentoModal({ lancamento, aoFechar, aoSalvar, 
 
     setOcupado(true)
     try {
-      await aoSalvar(lancamento.id, { tipo, item: item.trim(), valorTotal: numero, data })
+      await aoSalvar(lancamento.id, { tipo, item: item.trim(), valorTotal: numero, data, vencimento: tipo === 'FIADO' && vencimento ? vencimento : null })
     } catch {
       setErro('Não foi possível salvar. Confira a conexão e tente de novo.')
     } finally {
@@ -81,6 +83,16 @@ export default function EditarLancamentoModal({ lancamento, aoFechar, aoSalvar, 
         <div className="desc campo">
           <input type="date" value={data} max={dataHojeISO()} onChange={(e) => setData(e.target.value)} />
         </div>
+
+        {tipo === 'FIADO' && (
+          <>
+            <div className="campo-label">Vai pagar quando? (opcional)</div>
+            <div className="desc campo">
+              <input type="date" value={vencimento} min={data} onChange={(e) => setVencimento(e.target.value)} />
+              {vencimento && <button className="limpar-data" onClick={() => setVencimento('')} aria-label="Tirar data">✕</button>}
+            </div>
+          </>
+        )}
 
         {erro && <div className="form-erro">{erro}</div>}
 

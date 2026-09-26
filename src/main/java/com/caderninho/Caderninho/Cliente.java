@@ -73,9 +73,9 @@ public class Cliente {
         return saldo;
     }
 
-    // Idade da dívida, como num caderno: os pagamentos abatem primeiro os fiados mais antigos.
-    // O cliente "deve desde" a data do fiado mais antigo que ainda não foi totalmente pago.
-    public Optional<LocalDate> getDevendoDesde() {
+    // Fiados ainda não totalmente pagos, do mais antigo para o mais novo.
+    // Como num caderno, os pagamentos abatem primeiro os fiados mais antigos.
+    private List<Lancamento> getFiadosEmAberto() {
         BigDecimal pago = lancamentos.stream()
                 .filter(l -> l.getTipo() == TipoLancamento.PAGAMENTO)
                 .map(Lancamento::getValorTotal)
@@ -87,33 +87,46 @@ public class Cliente {
                         .thenComparing(Lancamento::getId, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
 
-        for (Lancamento fiado : fiados) {
+        for (int i = 0; i < fiados.size(); i++) {
+            Lancamento fiado = fiados.get(i);
             if (pago.compareTo(fiado.getValorTotal()) >= 0) {
                 pago = pago.subtract(fiado.getValorTotal());
             } else {
-                return Optional.of(fiado.getData());
+                return fiados.subList(i, fiados.size());
             }
         }
-        return Optional.empty();
+        return List.of();
+    }
+
+    // O cliente "deve desde" a data do fiado mais antigo que ainda não foi totalmente pago.
+    public Optional<LocalDate> getDevendoDesde() {
+        return getFiadosEmAberto().stream().findFirst().map(Lancamento::getData);
     }
 
     public long getDiasDevendo() {
         return getDevendoDesde().map(desde -> ChronoUnit.DAYS.between(desde, LocalDate.now())).orElse(0L);
     }
 
-    // Quando a dívida atual vence: o primeiro dia combinado depois de "deve desde"
-    // (ou "deve desde" + prazo padrão, se não houver dia combinado).
+    // Vencimento de um fiado: a data combinada nele ou, se não tiver, o primeiro dia combinado
+    // do cliente depois da compra (ou a compra + prazo padrão, se não houver dia combinado).
+    public LocalDate vencimentoDoFiado(Lancamento fiado) {
+        if (fiado.getVencimento() != null) {
+            return fiado.getVencimento();
+        }
+        LocalDate compra = fiado.getData();
+        if (diaPagamento == null) {
+            return compra.plusDays(PRAZO_PADRAO_DIAS);
+        }
+        LocalDate candidato = diaNoMes(compra, diaPagamento);
+        if (!candidato.isAfter(compra)) {
+            candidato = diaNoMes(compra.plusMonths(1), diaPagamento);
+        }
+        return candidato;
+    }
+
+    // A conta vence quando vence o primeiro fiado ainda em aberto.
     public Optional<LocalDate> getVencimento() {
-        return getDevendoDesde().map(desde -> {
-            if (diaPagamento == null) {
-                return desde.plusDays(PRAZO_PADRAO_DIAS);
-            }
-            LocalDate candidato = diaNoMes(desde, diaPagamento);
-            if (!candidato.isAfter(desde)) {
-                candidato = diaNoMes(desde.plusMonths(1), diaPagamento);
-            }
-            return candidato;
-        });
+        return getFiadosEmAberto().stream().map(this::vencimentoDoFiado).min(Comparator.naturalOrder());
     }
 
     // Dia 31 em mês de 30 dias (ou fevereiro) vira o último dia do mês.

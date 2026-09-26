@@ -20,6 +20,9 @@ public class Lancamento {
     private BigDecimal valorTotal;
     private LocalDate data;
 
+    // Data combinada para pagar este fiado (opcional). Nula = segue o dia combinado do cliente ou o prazo padrão.
+    private LocalDate vencimento;
+
 
 
     @ManyToOne
@@ -41,6 +44,14 @@ public class Lancamento {
         this.item = item;
         this.valorTotal = valorTotal;
         this.data = data;
+    }
+
+    public LocalDate getVencimento() {
+        return vencimento;
+    }
+
+    public void setVencimento(LocalDate vencimento) {
+        this.vencimento = vencimento;
     }
 
     public Long getId() {

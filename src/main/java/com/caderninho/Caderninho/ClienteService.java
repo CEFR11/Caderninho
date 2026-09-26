@@ -18,7 +18,7 @@ public class ClienteService {
 
     public LancamentoDTO converterLancamento(Lancamento l) {
 
-        return new LancamentoDTO(l.getId(), l.getTipo(), l.getItem(), l.getValorTotal(), l.getData());
+        return new LancamentoDTO(l.getId(), l.getTipo(), l.getItem(), l.getValorTotal(), l.getData(), l.getVencimento());
     }
 
     public ClienteDTO converterClienteDTO(Cliente cliente) {
@@ -50,10 +50,16 @@ public class ClienteService {
 
         Lancamento lancamento = new Lancamento(novoLancamento.tipo(), novoLancamento.item(), novoLancamento.valorTotal(), novoLancamento.data());
         lancamento.setCliente(cliente);
+        lancamento.setVencimento(vencimentoSeFiado(novoLancamento));
         lancamentoRepository.save(lancamento);
         cliente.adicionarLancamentos(lancamento);
         return cliente;
 
+    }
+
+    // Só fiado tem data para pagar; em pagamento o campo é ignorado.
+    private static java.time.LocalDate vencimentoSeFiado(NovoLancamentoDTO dados) {
+        return dados.tipo() == TipoLancamento.FIADO ? dados.vencimento() : null;
     }
 
     public Cliente editarLancamento(Long lancamentoId, NovoLancamentoDTO dados) {
@@ -64,6 +70,7 @@ public class ClienteService {
         }
 
         lancamento.atualizar(dados.tipo(), dados.item(), dados.valorTotal(), dados.data());
+        lancamento.setVencimento(vencimentoSeFiado(dados));
         lancamentoRepository.save(lancamento);
         return lancamento.getCliente();
     }

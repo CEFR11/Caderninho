@@ -158,3 +158,15 @@ export function situacaoVencimento({ vencimento, diasAtraso }) {
   }
   return { classe: 'ok', rotulo: 'em dia', texto: `vence ${dataCurta(vencimento)}` }
 }
+
+// Mesmo cálculo do backend (Cliente.vencimentoDoFiado) para um fiado sem data marcada:
+// o primeiro dia combinado depois da compra, ou a compra + 30 dias.
+export function vencimentoPadrao(dataCompraISO, diaPagamento) {
+  const [ano, mes, dia] = dataCompraISO.split('-').map(Number)
+  const paraISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  if (!diaPagamento) return paraISO(new Date(ano, mes - 1, dia + 30))
+  const diaNoMes = (a, m) => new Date(a, m, Math.min(diaPagamento, new Date(a, m + 1, 0).getDate()))
+  let candidato = diaNoMes(ano, mes - 1)
+  if (candidato <= new Date(ano, mes - 1, dia)) candidato = diaNoMes(ano, mes)
+  return paraISO(candidato)
+}

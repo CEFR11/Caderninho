@@ -49,6 +49,7 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
             <LinhaRotulo rotulo="Data" valor={dataCurta(dados.data)} />
             <LinhaRotulo rotulo="Item" valor={dados.item} />
             <LinhaRotulo rotulo={dados.tipoLancamento === 'fiado' ? 'Fiado' : 'Pagamento'} valor={fmt(dados.valor)} destaque />
+            {dados.vencimento && <LinhaRotulo rotulo="Pagar até" valor={dataCurta(dados.vencimento)} />}
           </>
         ) : (
           dados.itens.length === 0

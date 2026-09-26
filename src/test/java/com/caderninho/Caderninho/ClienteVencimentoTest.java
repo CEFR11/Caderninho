@@ -55,4 +55,33 @@ class ClienteVencimentoTest {
         assertEquals(Optional.empty(), cliente.getVencimento());
         assertEquals(0, cliente.getDiasAtraso());
     }
+
+    @Test
+    void dataMarcadaNoFiadoVaiNaFrenteDoDiaCombinado() {
+        Cliente cliente = clienteComFiado(10, LocalDate.of(2026, 8, 19));
+        Lancamento fiado = cliente.getLancamentos().get(0);
+        fiado.setVencimento(LocalDate.of(2026, 8, 25));
+        assertEquals(Optional.of(LocalDate.of(2026, 8, 25)), cliente.getVencimento());
+    }
+
+    @Test
+    void contaVenceQuandoVenceOPrimeiroFiadoEmAberto() {
+        Cliente cliente = clienteComFiado(null, LocalDate.of(2026, 8, 1));
+        Lancamento maisNovo = new Lancamento(TipoLancamento.FIADO, "roupa", new BigDecimal("100"), LocalDate.of(2026, 8, 20));
+        maisNovo.setVencimento(LocalDate.of(2026, 8, 22));
+        cliente.adicionarLancamentos(maisNovo);
+
+        // O fiado de 01/08 venceria em 31/08, mas o de 20/08 foi combinado para 22/08.
+        assertEquals(Optional.of(LocalDate.of(2026, 8, 22)), cliente.getVencimento());
+    }
+
+    @Test
+    void fiadoJaPagoNaoContaParaOVencimento() {
+        Cliente cliente = clienteComFiado(null, LocalDate.of(2026, 8, 1));
+        cliente.getLancamentos().get(0).setVencimento(LocalDate.of(2026, 8, 5));
+        cliente.adicionarLancamentos(new Lancamento(TipoLancamento.PAGAMENTO, "pix", new BigDecimal("50"), LocalDate.of(2026, 8, 4)));
+        cliente.adicionarLancamentos(new Lancamento(TipoLancamento.FIADO, "pao", new BigDecimal("20"), LocalDate.of(2026, 8, 10)));
+
+        assertEquals(Optional.of(LocalDate.of(2026, 9, 9)), cliente.getVencimento());
+    }
 }

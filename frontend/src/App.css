@@ -231,6 +231,13 @@ body {
 .ficha-sal .situacao { font-weight: 700; }
 .ficha-sal .situacao.ok { color: var(--paid); }
 .ficha-sal .situacao.soon { color: #9A6B0C; }
+.data-linha i { font-style: normal; opacity: .75; }
+.data-com-limpar { display: flex; align-items: center; gap: 6px; }
+.limpar-data {
+  border: none; background: var(--line); color: var(--muted); width: 24px; height: 24px; border-radius: 8px;
+  cursor: pointer; font-size: 11px; flex: 0 0 auto;
+}
+.dica-venc { font-size: 12px; color: var(--muted); margin: -8px 3px 12px; text-align: right; }
 .form-erro { font-size: 12.5px; color: var(--debt); margin: -6px 0 10px 3px; }
 
 .add-cliente {

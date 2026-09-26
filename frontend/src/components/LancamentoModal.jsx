@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora, valorDigitado, paraDigitado } from '../format'
+import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta } from '../format'
 import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ClienteModal from './ClienteModal'
@@ -14,6 +14,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const [valor, setValor] = useState('')
   const [descricao, setDescricao] = useState('')
   const [data, setData] = useState(dataHojeISO())
+  const [vencimento, setVencimento] = useState('')
   const [erroSalvar, setErroSalvar] = useState(null)
   const [confirmarExcedente, setConfirmarExcedente] = useState(false)
   const [pickerAberto, setPickerAberto] = useState(false)
@@ -35,6 +36,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     setValor('')
     setDescricao('')
     setData(dataHojeISO())
+    setVencimento('')
     setErroSalvar(null)
     setConfirmarExcedente(false)
     setPickerAberto(!clienteInicialId)
@@ -96,6 +98,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         item,
         valorTotal: numero,
         data,
+        vencimento: tipo === 'fiado' && vencimento ? vencimento : null,
       })
       const saldoDepois = Number(clienteAtualizado.saldoDevedor)
       // O lançamento recém-criado é o de maior id na lista devolvida pelo backend.
@@ -108,6 +111,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         item,
         valor: numero,
         data,
+        vencimento: tipo === 'fiado' ? (vencimento || vencimentoPadrao(data, clienteAtual.diaPagamento)) : null,
         saldoDepois,
         emitidoEm: dataHoraAgora(),
       })
@@ -221,6 +225,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 item: recibo.item,
                 tipoLancamento: recibo.tipo,
                 valor: recibo.valor,
+                vencimento: recibo.vencimento,
                 saldo: recibo.saldoDepois,
                 emitidoEm: recibo.emitidoEm,
               }}
@@ -300,6 +305,23 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
               <span>Quando foi?</span>
               <input type="date" value={data} max={dataHojeISO()} onChange={(e) => setData(e.target.value || dataHojeISO())} />
             </div>
+            {tipo === 'fiado' && (
+              <>
+                <div className="data-linha">
+                  <span>Vai pagar quando? <i>(opcional)</i></span>
+                  <span className="data-com-limpar">
+                    <input type="date" value={vencimento} min={data} onChange={(e) => setVencimento(e.target.value)} />
+                    {vencimento && <button className="limpar-data" onClick={() => setVencimento('')} aria-label="Tirar data">✕</button>}
+                  </span>
+                </div>
+                {!vencimento && clienteAtual && (
+                  <div className="dica-venc">
+                    Sem data marcada: vence {dataCurta(vencimentoPadrao(data, clienteAtual.diaPagamento))}
+                    {clienteAtual.diaPagamento ? ` (dia ${clienteAtual.diaPagamento} combinado)` : ' (30 dias)'}
+                  </div>
+                )}
+              </>
+            )}
             <div className="pad">
               {TECLAS.map((k) => <button key={k} onClick={() => tecla(k)}>{k}</button>)}
             </div>

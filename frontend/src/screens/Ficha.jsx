@@ -112,7 +112,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
               <span className={`dot ${ehFiado ? 'debt' : 'paid'}`} />
               <div className="b">
                 <div className="it">{l.item}</div>
-                <div className="dt">{dataRelativa(l.data)}</div>
+                <div className="dt">{dataRelativa(l.data)}{l.vencimento ? ` · pagar até ${dataCurta(l.vencimento)}` : ''}</div>
               </div>
               <ValorAnotacao tipo={l.tipo} valor={l.valorTotal} />
             </div>

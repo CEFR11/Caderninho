@@ -6,13 +6,14 @@ export function linkWhatsApp(telefone, mensagem) {
   return `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`
 }
 
-export function mensagemRecibo({ nome, tipo, item, valor, data, saldoDepois }) {
+export function mensagemRecibo({ nome, tipo, item, valor, data, vencimento, saldoDepois }) {
   return [
     `Olá, ${nome}! Aqui está o registro ${tipo === 'fiado' ? 'da sua compra' : 'do seu pagamento'} no Caderninho:`,
     '',
     `Data: ${dataCurta(data)}`,
     `Item: ${item}`,
     `${tipo === 'fiado' ? 'Fiado' : 'Pagou'}: ${fmt(valor)}`,
+    ...(vencimento ? [`Pagar até: ${dataCurta(vencimento)}`] : []),
     '',
     `${rotuloSaldo(saldoDepois)}: ${valorSaldo(saldoDepois)}`,
   ].join('\n')
