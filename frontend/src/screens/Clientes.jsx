@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { fmt, iniciais, corAvatar } from '../format'
+import MicButton from '../components/MicButton'
 
 const FILTROS = [
   { id: 'todos', label: 'Todos' },
@@ -37,6 +38,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente 
     <div className="screen">
       <div className="search">
         <input placeholder="Buscar por nome..." value={busca} onChange={(e) => setBusca(e.target.value)} />
+        <MicButton aoOuvir={setBusca} />
       </div>
 
       <button className="add-cliente" onClick={aoAbrirNovoCliente}>

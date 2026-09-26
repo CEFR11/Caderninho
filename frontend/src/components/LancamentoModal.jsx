@@ -4,6 +4,7 @@ import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import NovoClienteModal from './NovoClienteModal'
 import ReciboCard from './ReciboCard'
+import MicButton from './MicButton'
 
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫']
 
@@ -191,6 +192,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 onChange={(e) => setBuscaPicker(e.target.value)}
                 autoFocus
               />
+              <MicButton aoOuvir={setBuscaPicker} />
             </div>
 
             <button className="add-cliente" onClick={() => setNovoClienteAberto(true)}>
@@ -229,6 +231,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
               />
+              <MicButton aoOuvir={(texto) => setDescricao(texto.charAt(0).toUpperCase() + texto.slice(1))} />
             </div>
             <div className="pad">
               {TECLAS.map((k) => <button key={k} onClick={() => tecla(k)}>{k}</button>)}
