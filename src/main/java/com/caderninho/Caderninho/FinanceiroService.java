@@ -82,16 +82,36 @@ public class FinanceiroService {
     }
 
     public FinanceiroResumoDTO gerarResumo() {
-        return new FinanceiroResumoDTO(calcularTotalAReceber(), calcularRecebidoNoMes(), calcularFiadoNoMes(), calcularRecebidoNaSemana(), calcularFiadoNaSemana(), calcularRecebidoHoje(), calcularFiadoHoje());
+        LocalDate hoje = LocalDate.now();
+        LocalDate fimDoMes = hoje.withDayOfMonth(hoje.lengthOfMonth());
+        List<Cliente> clientes = clienteRepository.findAll();
+
+        List<BigDecimal> venceNoMesPorCliente = clientes.stream().map(c -> c.getAReceberEntre(hoje, fimDoMes)).toList();
+        BigDecimal venceNoMes = venceNoMesPorCliente.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        long clientesVenceNoMes = venceNoMesPorCliente.stream().filter(v -> v.signum() > 0).count();
+        BigDecimal atrasado = clientes.stream().map(c -> c.getValorAtrasado(hoje)).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new FinanceiroResumoDTO(calcularTotalAReceber(), calcularRecebidoNoMes(), calcularFiadoNoMes(), calcularRecebidoNaSemana(), calcularFiadoNaSemana(), calcularRecebidoHoje(), calcularFiadoHoje(),
+                venceNoMes, clientesVenceNoMes, atrasado);
 
     }
 
     public List<FilaClienteDTO> gerarFila(String filtro) {
+        LocalDate hoje = LocalDate.now();
+        LocalDate fimDoMes = hoje.withDayOfMonth(hoje.lengthOfMonth());
         List<Cliente> clientes = clienteRepository.findAll().stream().filter(c -> c.getSaldoDevedor().compareTo(BigDecimal.ZERO) > 0).toList();
         List<FilaClienteDTO> filaClienteDTO = clientes.stream().map(c -> new FilaClienteDTO(c.getId(), c.getNome(), c.getSaldoDevedor(), c.getDiasDevendo(), c.getDevendoDesde().orElse(null),
-                c.getVencimento().orElse(null), c.getDiasAtraso(), c.getDiaPagamento())).toList();
+                c.getVencimento().orElse(null), c.getDiasAtraso(), c.getDiaPagamento(),
+                c.getValorAtrasado(hoje), c.getAReceberEntre(hoje, fimDoMes), c.getProximoVencimentoEntre(hoje, fimDoMes).orElse(null))).toList();
 
         switch (filtro) {
+            case "mes":
+                // Quem tem peça vencendo de hoje até o fim do mês, na ordem da data.
+                return filaClienteDTO.stream()
+                        .filter(c -> c.venceNoMes().signum() > 0)
+                        .sorted(Comparator.comparing(FilaClienteDTO::proximoVencimentoNoMes))
+                        .toList();
+
             case "atrasados":
                 return filaClienteDTO.stream().filter(c -> c.diasAtraso() > 0).sorted(Comparator.comparing(FilaClienteDTO::diasAtraso).reversed()).toList();
 

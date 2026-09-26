@@ -100,6 +100,17 @@ body {
 .qcard .v.debt { color: var(--debt); }
 .qcard .v.paid { color: var(--paid); }
 
+/* ---------- VENCE ESTE MÊS ---------- */
+.vence-mes {
+  display: block; width: 100%; text-align: left; margin-top: 12px; cursor: pointer; font: inherit; color: inherit;
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 13px 14px;
+}
+.vence-mes:disabled { cursor: default; }
+.vence-mes .t { font-size: 12px; color: var(--muted); font-weight: 500; }
+.vence-mes .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 20px; margin-top: 4px; letter-spacing: -.5px; color: var(--debt); }
+.vence-mes .s { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.vence-mes:not(:disabled) .s { color: var(--primary); font-weight: 600; }
+
 /* ---------- ALERT ---------- */
 .alert {
   display: flex; gap: 11px; align-items: flex-start; background: var(--warn-soft); border: 1px solid #F6DFB4;
@@ -166,6 +177,7 @@ body {
 .queue-item .amt {
   font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14.5px; color: var(--debt); text-align: right; flex: 0 0 auto;
 }
+.queue-item .amt-sub { font-size: 10.5px; font-weight: 500; color: var(--muted); margin-top: 2px; }
 .urg { height: 3px; border-radius: 99px; margin-top: 7px; background: var(--line); overflow: hidden; }
 .urg span { display: block; height: 100%; border-radius: 99px; }
 .u-hi span { background: var(--debt); }

@@ -4,13 +4,24 @@ import {fmt, situacaoVencimento} from '../format'
 
 const FILTROS = [
     {id: 'prioridade', label: 'Prioridade'},
+    {id: 'mes', label: 'Este mês'},
     {id: 'atrasados', label: 'Atrasados'},
     {id: 'valor', label: 'Maior valor'},
     {id: 'recentes', label: 'Mais recentes'},
 ]
 
-export default function Fiados({ refreshKey, aoAbrirFicha }) {
-    const [filtro, setFiltro] = useState('prioridade')
+const TITULOS = {atrasados: 'Já venceu', mes: 'Vence este mês'}
+const VAZIO = {atrasados: 'Ninguém atrasado 🎉', mes: 'Nada vence até o fim do mês.'}
+
+// Valor que interessa em cada filtro: o que já venceu, o que vence no mês ou a dívida toda.
+function valorDoFiltro(c, filtro) {
+    if (filtro === 'atrasados') return Number(c.atrasado)
+    if (filtro === 'mes') return Number(c.venceNoMes)
+    return Number(c.saldo)
+}
+
+export default function Fiados({ refreshKey, aoAbrirFicha, filtroInicial = 'prioridade' }) {
+    const [filtro, setFiltro] = useState(filtroInicial)
     const [lista, setLista] = useState([])
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState(null)
@@ -23,13 +34,13 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
             .finally(() => setCarregando(false))
     }, [filtro, refreshKey])
 
-    const total = lista.reduce((s, c) => s + Number(c.saldo), 0)
+    const total = lista.reduce((s, c) => s + valorDoFiltro(c, filtro), 0)
 
     return (
         <div className="screen">
             <div className="total-strip">
                 <div className="l">
-                    {filtro === 'atrasados' ? 'Com pagamento atrasado' : 'Para cobrar'}
+                    {TITULOS[filtro] ?? 'Para cobrar'}
                     {' · '}{lista.length} cliente{lista.length !== 1 ? 's' : ''}
                 </div>
                 <div className="r">{fmt(total)}</div>
@@ -52,9 +63,12 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
 
             {!carregando && !erro && (
                 lista.length === 0
-                    ? <div className="empty">Ninguém devendo. Tudo quitado 🎉</div>
+                    ? <div className="empty">{VAZIO[filtro] ?? 'Ninguém devendo. Tudo quitado 🎉'}</div>
                     : <div className="fila-lista">{lista.map((c, idx) => {
-                        const situacao = situacaoVencimento(c)
+                        const situacao = filtro === 'mes'
+                            ? situacaoVencimento({vencimento: c.proximoVencimentoNoMes, diasAtraso: 0})
+                            : situacaoVencimento(c)
+                        const valor = valorDoFiltro(c, filtro)
                         const urgencia = { late: 'u-hi', soon: 'u-md', ok: 'u-lo' }[situacao.classe]
                         const largura = situacao.classe === 'late' ? Math.min(100, 40 + Number(c.diasAtraso) * 2) : situacao.classe === 'soon' ? 30 : 10
 
@@ -70,7 +84,10 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
                                     </div>
                                     <div className={`urg ${urgencia}`}><span style={{width: `${largura}%`}}/></div>
                                 </div>
-                                <div className="amt">{fmt(c.saldo)}</div>
+                                <div className="amt">
+                                    {fmt(valor)}
+                                    {valor < Number(c.saldo) && <div className="amt-sub">deve {fmt(c.saldo)}</div>}
+                                </div>
                             </div>
                         )
                     })}</div>

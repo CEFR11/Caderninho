@@ -16,6 +16,8 @@ import './App.css'
 export default function App() {
   const [tela, setTela] = useState('inicio')
   const [clienteFichaId, setClienteFichaId] = useState(null)
+  // Filtro com que a tela Fiados abre (o cartão "Vence este mês" do Início abre no filtro do mês).
+  const [filtroFiados, setFiltroFiados] = useState('prioridade')
   const [refreshKey, setRefreshKey] = useState(0)
   const [clientes, setClientes] = useState([])
   const [modal, setModal] = useState({ aberto: false, clienteId: null, tipo: 'fiado', fiadoAlvo: null })
@@ -26,6 +28,16 @@ export default function App() {
   useEffect(() => {
     api.clientes().then(setClientes).catch(() => {})
   }, [refreshKey])
+
+  function trocarTela(novaTela) {
+    setFiltroFiados('prioridade')
+    setTela(novaTela)
+  }
+
+  function verVenceNoMes() {
+    setFiltroFiados('mes')
+    setTela('fiados')
+  }
 
   function abrirFicha(id) {
     setClienteFichaId(id)
@@ -102,8 +114,8 @@ export default function App() {
   }
 
   const TELAS = {
-    inicio: <Inicio refreshKey={refreshKey} />,
-    fiados: <Fiados refreshKey={refreshKey} aoAbrirFicha={abrirFicha} />,
+    inicio: <Inicio refreshKey={refreshKey} aoVerVenceNoMes={verVenceNoMes} />,
+    fiados: <Fiados refreshKey={refreshKey} aoAbrirFicha={abrirFicha} filtroInicial={filtroFiados} />,
     clientes: <Clientes refreshKey={refreshKey} aoAbrirFicha={abrirFicha} aoAbrirNovoCliente={() => setNovoClienteAberto(true)} />,
     financeiro: <Financeiro refreshKey={refreshKey} />,
     ficha: (
@@ -161,7 +173,7 @@ export default function App() {
   return (
     <div className={`app-shell ${ehDesktop ? 'desktop' : ''}`}>
       {ehDesktop && (
-        <Sidebar telaAtual={navAtiva} aoTrocarTela={setTela} aoNovoLancamento={() => abrirLancamento('fiado')} />
+        <Sidebar telaAtual={navAtiva} aoTrocarTela={trocarTela} aoNovoLancamento={() => abrirLancamento('fiado')} />
       )}
 
       <div className="main">
@@ -183,7 +195,7 @@ export default function App() {
       {!ehDesktop && (
         <>
           <button className="fab" onClick={() => abrirLancamento('fiado')}>+</button>
-          <NavBar telaAtual={navAtiva} aoTrocarTela={setTela} />
+          <NavBar telaAtual={navAtiva} aoTrocarTela={trocarTela} />
         </>
       )}
 

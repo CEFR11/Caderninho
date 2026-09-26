@@ -9,5 +9,10 @@ public record FinanceiroResumoDTO(
         BigDecimal recebidoNaSemana,
         BigDecimal fiadoNaSemana,
         BigDecimal recebidoHoje,
-        BigDecimal fiadoHoje) {
+        BigDecimal fiadoHoje,
+        // Peças que vencem de hoje até o fim do mês (sem contar o que já está atrasado).
+        BigDecimal venceNoMes,
+        long clientesVenceNoMes,
+        // Peças que já venceram e não foram pagas.
+        BigDecimal atrasado) {
 }

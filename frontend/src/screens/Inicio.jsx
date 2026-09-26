@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import ValorAnotacao from '../components/ValorAnotacao'
-import { fmt, dataRelativa } from '../format'
+import { fmt, dataRelativa, dataCurta, dataHojeISO } from '../format'
 
-export default function Inicio({ refreshKey }) {
+function fimDoMesCurto() {
+  const [ano, mes] = dataHojeISO().split('-').map(Number)
+  const ultimo = new Date(ano, mes, 0).getDate()
+  return dataCurta(`${ano}-${String(mes).padStart(2, '0')}-${ultimo}`)
+}
+
+export default function Inicio({ refreshKey, aoVerVenceNoMes }) {
   const [resumo, setResumo] = useState(null)
   const [devedores, setDevedores] = useState(0)
-  const [atrasados, setAtrasados] = useState([])
+  const [clientesAtrasados, setClientesAtrasados] = useState(0)
   const [recentes, setRecentes] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
@@ -22,7 +28,7 @@ export default function Inicio({ refreshKey }) {
         ])
         setResumo(dadosResumo)
         setDevedores(dadosFila.length)
-        setAtrasados(dadosAtrasados)
+        setClientesAtrasados(dadosAtrasados.length)
 
         const movimentos = dadosClientes
           .flatMap((c) => c.lancamentos.map((l) => ({ ...l, nome: c.nome })))
@@ -43,7 +49,8 @@ export default function Inicio({ refreshKey }) {
 
   const total = Number(resumo.totalAReceber)
   const recebidoMes = Number(resumo.recebidoNoMes)
-  const somaAtrasados = atrasados.reduce((s, c) => s + Number(c.saldo), 0)
+  const venceNoMes = Number(resumo.venceNoMes)
+  const clientesVenceNoMes = Number(resumo.clientesVenceNoMes)
 
   return (
     <div className="screen">
@@ -58,6 +65,16 @@ export default function Inicio({ refreshKey }) {
             </div>
           </div>
 
+          <button className="vence-mes" onClick={aoVerVenceNoMes} disabled={clientesVenceNoMes === 0}>
+            <div className="t">Vence este mês</div>
+            <div className="v">{fmt(venceNoMes)}</div>
+            <div className="s">
+              {clientesVenceNoMes === 0
+                ? 'Nada vence até o fim do mês'
+                : `${clientesVenceNoMes} cliente${clientesVenceNoMes > 1 ? 's' : ''} até ${fimDoMesCurto()} · ver quem ›`}
+            </div>
+          </button>
+
           <div className="quickgrid">
             <div className="qcard">
               <div className="t">Fiado hoje</div>
@@ -69,12 +86,12 @@ export default function Inicio({ refreshKey }) {
             </div>
           </div>
 
-          {atrasados.length > 0 && (
+          {clientesAtrasados > 0 && (
             <div className="alert">
               <div className="ic">!</div>
               <div className="tx">
-                <b>{atrasados.length} cliente{atrasados.length > 1 ? 's' : ''}</b> {atrasados.length > 1 ? 'estão' : 'está'} com o pagamento atrasado.
-                Juntos somam <b>{fmt(somaAtrasados)}</b>.
+                <b>{clientesAtrasados} cliente{clientesAtrasados > 1 ? 's' : ''}</b> {clientesAtrasados > 1 ? 'estão' : 'está'} com o pagamento atrasado.
+                Já venceu <b>{fmt(resumo.atrasado)}</b>.
               </div>
             </div>
           )}

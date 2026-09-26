@@ -153,6 +153,34 @@ public class Cliente {
         return getFiadosEmAberto().stream().map(this::vencimentoDoFiado).min(Comparator.naturalOrder());
     }
 
+    // Quanto falta pagar das peças que vencem entre `de` e `ate` (inclusive).
+    public BigDecimal getAReceberEntre(LocalDate de, LocalDate ate) {
+        return getRestantePorFiado().entrySet().stream()
+                .filter(e -> e.getValue().signum() > 0)
+                .filter(e -> {
+                    LocalDate vence = vencimentoDoFiado(e.getKey());
+                    return !vence.isBefore(de) && !vence.isAfter(ate);
+                })
+                .map(Map.Entry::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Primeira data de vencimento entre `de` e `ate` de uma peça ainda em aberto.
+    public Optional<LocalDate> getProximoVencimentoEntre(LocalDate de, LocalDate ate) {
+        return getFiadosEmAberto().stream()
+                .map(this::vencimentoDoFiado)
+                .filter(vence -> !vence.isBefore(de) && !vence.isAfter(ate))
+                .min(Comparator.naturalOrder());
+    }
+
+    // Quanto falta pagar das peças que já venceram antes de `hoje`.
+    public BigDecimal getValorAtrasado(LocalDate hoje) {
+        return getRestantePorFiado().entrySet().stream()
+                .filter(e -> e.getValue().signum() > 0 && vencimentoDoFiado(e.getKey()).isBefore(hoje))
+                .map(Map.Entry::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     // Dia 31 em mês de 30 dias (ou fevereiro) vira o último dia do mês.
     private static LocalDate diaNoMes(LocalDate referencia, int dia) {
         return referencia.withDayOfMonth(Math.min(dia, referencia.lengthOfMonth()));
