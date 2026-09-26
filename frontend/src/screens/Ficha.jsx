@@ -5,7 +5,7 @@ import { linkWhatsApp, mensagemExtrato } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
 
-export default function Ficha({ clienteId, refreshKey, aoVoltar, aoAbrirLancamento, aoMostrarToast }) {
+export default function Ficha({ clienteId, refreshKey, embutida = false, aoVoltar, aoAbrirLancamento, aoMostrarToast }) {
   const [cliente, setCliente] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
@@ -41,7 +41,7 @@ export default function Ficha({ clienteId, refreshKey, aoVoltar, aoAbrirLancamen
 
   return (
     <div className="screen">
-      <button className="back" onClick={aoVoltar}>← Clientes</button>
+      {!embutida && <button className="back" onClick={aoVoltar}>← Clientes</button>}
 
       <div className="ficha-head">
         <div className="av" style={{ background: corAvatar(cliente.id) }}>{iniciais(cliente.nome)}</div>

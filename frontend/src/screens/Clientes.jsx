@@ -9,7 +9,7 @@ const FILTROS = [
   { id: 'quites', label: 'Em dia' },
 ]
 
-export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente }) {
+export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente, clienteSelecionadoId }) {
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('todos')
   const [clientes, setClientes] = useState([])
@@ -68,7 +68,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente 
           return (
             <div key={c.id}>
               {novaLetra && <div className="letter">{letra}</div>}
-              <div className="crow" onClick={() => aoAbrirFicha(c.id)}>
+              <div className={`crow ${c.id === clienteSelecionadoId ? 'on' : ''}`} onClick={() => aoAbrirFicha(c.id)}>
                 <div className="av" style={{ background: corAvatar(c.id) }}>{iniciais(c.nome)}</div>
                 <div className="info">
                   <div className="nm">{c.nome}</div>

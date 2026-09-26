@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import NavBar from './components/NavBar'
+import NavBar, { ITENS_NAV } from './components/NavBar'
+import Sidebar from './components/Sidebar'
 import LancamentoModal from './components/LancamentoModal'
 import NovoClienteModal from './components/NovoClienteModal'
 import Inicio from './screens/Inicio'
@@ -9,6 +10,7 @@ import Financeiro from './screens/Financeiro'
 import Ficha from './screens/Ficha'
 import { api } from './api'
 import { mesEAnoAtual } from './format'
+import { useEhDesktop } from './useEhDesktop'
 import './App.css'
 
 export default function App() {
@@ -19,6 +21,7 @@ export default function App() {
   const [modal, setModal] = useState({ aberto: false, clienteId: null, tipo: 'fiado' })
   const [novoClienteAberto, setNovoClienteAberto] = useState(false)
   const [toast, setToast] = useState('')
+  const ehDesktop = useEhDesktop()
 
   useEffect(() => {
     api.clientes().then(setClientes).catch(() => {})
@@ -79,20 +82,63 @@ export default function App() {
 
   const navAtiva = tela === 'ficha' ? 'clientes' : tela
 
-  return (
-    <div className="app-shell">
-      <div className="topbar">
-        <div className="brand">
-          <img className="mark" src="/icon-192.png" alt="" />
-          <div className="name">Caderninho</div>
+  // No desktop, Clientes e Ficha viram uma tela só: lista à esquerda, ficha à direita.
+  const conteudo = ehDesktop && navAtiva === 'clientes'
+    ? (
+      <div className="split">
+        <Clientes
+          refreshKey={refreshKey}
+          aoAbrirFicha={abrirFicha}
+          aoAbrirNovoCliente={() => setNovoClienteAberto(true)}
+          clienteSelecionadoId={clienteFichaId}
+        />
+        <div className="split-detalhe">
+          {clienteFichaId
+            ? (
+              <Ficha
+                embutida
+                clienteId={clienteFichaId}
+                refreshKey={refreshKey}
+                aoAbrirLancamento={abrirLancamento}
+                aoMostrarToast={mostrarToast}
+              />
+            )
+            : <div className="split-vazio">Selecione um cliente para ver a ficha.</div>}
         </div>
-        <div className="month-chip">{mesEAnoAtual()}</div>
+      </div>
+    )
+    : TELAS[tela]
+
+  const tituloDaTela = ITENS_NAV.find((item) => item.id === navAtiva)?.label
+
+  return (
+    <div className={`app-shell ${ehDesktop ? 'desktop' : ''}`}>
+      {ehDesktop && (
+        <Sidebar telaAtual={navAtiva} aoTrocarTela={setTela} aoNovoLancamento={() => abrirLancamento('fiado')} />
+      )}
+
+      <div className="main">
+        <div className="topbar">
+          {ehDesktop
+            ? <div className="page-title">{tituloDaTela}</div>
+            : (
+              <div className="brand">
+                <img className="mark" src="/icon-192.png" alt="" />
+                <div className="name">Caderninho</div>
+              </div>
+            )}
+          <div className="month-chip">{mesEAnoAtual()}</div>
+        </div>
+
+        {conteudo}
       </div>
 
-      {TELAS[tela]}
-
-      <button className="fab" onClick={() => abrirLancamento('fiado')}>+</button>
-      <NavBar telaAtual={navAtiva} aoTrocarTela={setTela} />
+      {!ehDesktop && (
+        <>
+          <button className="fab" onClick={() => abrirLancamento('fiado')}>+</button>
+          <NavBar telaAtual={navAtiva} aoTrocarTela={setTela} />
+        </>
+      )}
 
       {toast && <div className="toast show">{toast}</div>}
 

@@ -50,7 +50,7 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
             {!carregando && !erro && (
                 lista.length === 0
                     ? <div className="empty">Ninguém devendo. Tudo quitado 🎉</div>
-                    : lista.map((c, idx) => {
+                    : <div className="fila-lista">{lista.map((c, idx) => {
                         const dias = Number(c.dias)
                         const urgencia = dias >= 30 ? 'u-hi' : dias >= 10 ? 'u-md' : 'u-lo'
                         const flagClasse = dias >= 30 ? 'late' : dias >= 10 ? 'soon' : 'ok'
@@ -72,7 +72,7 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
                                 <div className="amt">{fmt(c.saldo)}</div>
                             </div>
                         )
-                    })
+                    })}</div>
             )}
         </div>
     )

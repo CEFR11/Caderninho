@@ -21,6 +21,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const [recibo, setRecibo] = useState(null)
   const [compartilhando, setCompartilhando] = useState(false)
   const reciboRef = useRef(null)
+  const aoTeclarRef = useRef(null)
 
   useEffect(() => {
     if (!aberto) return
@@ -33,6 +34,15 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     setRecemCriado(null)
     setRecibo(null)
   }, [aberto, clienteInicialId, tipoInicial])
+
+  // Teclado físico (útil no computador): a função muda a cada render, então o listener
+  // chama sempre a versão mais recente pela ref.
+  useEffect(() => {
+    if (!aberto) return
+    const ouvir = (e) => aoTeclarRef.current?.(e)
+    window.addEventListener('keydown', ouvir)
+    return () => window.removeEventListener('keydown', ouvir)
+  }, [aberto])
 
   if (!aberto) return null
 
@@ -99,6 +109,18 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     } finally {
       setCompartilhando(false)
     }
+  }
+
+  aoTeclarRef.current = (e) => {
+    if (novoClienteAberto) return
+    if (e.key === 'Escape') { aoFechar(); return }
+    if (recibo || pickerAberto) return
+    const digitandoNoCampo = e.target instanceof HTMLInputElement
+    if (e.key === 'Enter') { e.preventDefault(); salvar(); return }
+    if (digitandoNoCampo) return
+    if (/^[0-9]$/.test(e.key)) tecla(e.key)
+    else if (e.key === ',' || e.key === '.') tecla(',')
+    else if (e.key === 'Backspace') tecla('⌫')
   }
 
   const listaPicker = clientesEfetivos

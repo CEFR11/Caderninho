@@ -49,54 +49,60 @@ export default function Inicio({ refreshKey }) {
 
   return (
     <div className="screen">
-      <div className="hero">
-        <div className="lbl">Total a receber</div>
-        <div className="big">{fmt(total)}</div>
-        <div className="sub">{devedores} clientes com saldo em aberto</div>
-        <div className="bar"><span style={{ width: `${pct}%` }} /></div>
-        <div className="bar-legend">
-          <span>Recebido no mês {fmt(recebidoMes)}</span>
-          <span>{pct}%</span>
-        </div>
-      </div>
-
-      <div className="quickgrid">
-        <div className="qcard">
-          <div className="t">Fiado hoje</div>
-          <div className="v debt">{fmt(resumo.fiadoHoje)}</div>
-        </div>
-        <div className="qcard">
-          <div className="t">Recebido hoje</div>
-          <div className="v paid">{fmt(resumo.recebidoHoje)}</div>
-        </div>
-      </div>
-
-      {atrasados.length > 0 && (
-        <div className="alert">
-          <div className="ic">!</div>
-          <div className="tx">
-            <b>{atrasados.length} cliente{atrasados.length > 1 ? 's' : ''}</b> {atrasados.length > 1 ? 'estão' : 'está'} há mais de 30 dias sem pagar nada.
-            Juntos somam <b>{fmt(somaAtrasados)}</b>.
-          </div>
-        </div>
-      )}
-
-      <div className="eyebrow">Movimento recente</div>
-      {recentes.length === 0
-        ? <div className="empty">Nenhum lançamento ainda.</div>
-        : recentes.map((r, idx) => {
-          const ehFiado = r.tipo === 'FIADO'
-          return (
-            <div className="ext" key={idx}>
-              <span className={`dot ${ehFiado ? 'debt' : 'paid'}`} />
-              <div className="b">
-                <div className="it">{r.nome}</div>
-                <div className="dt">{r.item} · {dataRelativa(r.data)}</div>
-              </div>
-              <div className={`vl ${ehFiado ? 'debt' : 'paid'}`}>{ehFiado ? '+' : '−'}{fmt(r.valorTotal)}</div>
+      <div className="dash-grid">
+        <div className="col">
+          <div className="hero">
+            <div className="lbl">Total a receber</div>
+            <div className="big">{fmt(total)}</div>
+            <div className="sub">{devedores} clientes com saldo em aberto</div>
+            <div className="bar"><span style={{ width: `${pct}%` }} /></div>
+            <div className="bar-legend">
+              <span>Recebido no mês {fmt(recebidoMes)}</span>
+              <span>{pct}%</span>
             </div>
-          )
-        })}
+          </div>
+
+          <div className="quickgrid">
+            <div className="qcard">
+              <div className="t">Fiado hoje</div>
+              <div className="v debt">{fmt(resumo.fiadoHoje)}</div>
+            </div>
+            <div className="qcard">
+              <div className="t">Recebido hoje</div>
+              <div className="v paid">{fmt(resumo.recebidoHoje)}</div>
+            </div>
+          </div>
+
+          {atrasados.length > 0 && (
+            <div className="alert">
+              <div className="ic">!</div>
+              <div className="tx">
+                <b>{atrasados.length} cliente{atrasados.length > 1 ? 's' : ''}</b> {atrasados.length > 1 ? 'estão' : 'está'} há mais de 30 dias sem pagar nada.
+                Juntos somam <b>{fmt(somaAtrasados)}</b>.
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="col">
+          <div className="eyebrow">Movimento recente</div>
+          {recentes.length === 0
+            ? <div className="empty">Nenhum lançamento ainda.</div>
+            : recentes.map((r, idx) => {
+              const ehFiado = r.tipo === 'FIADO'
+              return (
+                <div className="ext" key={idx}>
+                  <span className={`dot ${ehFiado ? 'debt' : 'paid'}`} />
+                  <div className="b">
+                    <div className="it">{r.nome}</div>
+                    <div className="dt">{r.item} · {dataRelativa(r.data)}</div>
+                  </div>
+                  <div className={`vl ${ehFiado ? 'debt' : 'paid'}`}>{ehFiado ? '+' : '−'}{fmt(r.valorTotal)}</div>
+                </div>
+              )
+            })}
+        </div>
+      </div>
     </div>
   )
 }

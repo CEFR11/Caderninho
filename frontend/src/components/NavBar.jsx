@@ -7,6 +7,8 @@ const DIREITA = [
   { id: 'financeiro', label: 'Financeiro', icone: '◔' },
 ]
 
+export const ITENS_NAV = [...ESQUERDA, ...DIREITA]
+
 function Item({ item, telaAtual, aoTrocarTela }) {
   return (
     <button
