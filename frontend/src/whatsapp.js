@@ -7,7 +7,8 @@ export function linkWhatsApp(telefone, mensagem) {
 }
 
 // itens: as peças anotadas juntas (fiado com mais de uma peça). pecaPaga: a peça que o pagamento abateu.
-export function mensagemRecibo({ nome, tipo, item, itens = [], valor, data, vencimento, pecaPaga, saldoDepois }) {
+// parcelas: quando o fiado foi parcelado, cada parcela com valor e vencimento.
+export function mensagemRecibo({ nome, tipo, item, itens = [], parcelas, valor, data, vencimento, pecaPaga, saldoDepois }) {
   const linhasItens = itens.length > 1
     ? [...itens.map((i) => `• ${i.item}: ${fmt(i.valor)}`), `Total: ${fmt(valor)}`]
     : [`Item: ${item}`, `${tipo === 'fiado' ? 'Fiado' : 'Pagou'}: ${fmt(valor)}`]
@@ -16,6 +17,7 @@ export function mensagemRecibo({ nome, tipo, item, itens = [], valor, data, venc
     '',
     `Data: ${dataCurta(data)}`,
     ...linhasItens,
+    ...(parcelas?.length > 1 ? [`Em ${parcelas.length}x:`, ...parcelas.map((p, idx) => `${idx + 1}ª: ${fmt(p.valor)} até ${dataCurta(p.vencimento)}`)] : []),
     ...(pecaPaga ? [`Abateu: ${pecaPaga}`] : []),
     ...(vencimento ? [`Pagar até: ${dataCurta(vencimento)}`] : []),
     '',

@@ -249,6 +249,18 @@ body {
   border: none; background: var(--line); color: var(--muted); width: 24px; height: 24px; border-radius: 8px;
   cursor: pointer; font-size: 11px; flex: 0 0 auto;
 }
+.parcelar { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: -4px 0 12px; }
+.parcelar-t { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 14px; color: var(--ink); margin-bottom: 9px; }
+.parcelas-opcoes { display: grid; grid-template-columns: 1.4fr repeat(5, 1fr); gap: 6px; }
+.parcelas-opcoes button {
+  height: 44px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 11px;
+  font-family: 'Plus Jakarta Sans'; font-size: 15px; font-weight: 700; cursor: pointer; padding: 0;
+}
+.parcelas-opcoes button.on { background: var(--debt); border-color: var(--debt); color: #fff; }
+.parcelar-resumo {
+  margin-top: 10px; padding: 9px 11px; border-radius: 10px; background: var(--debt-soft); color: var(--debt);
+  font-size: 14px; font-weight: 600; line-height: 1.4;
+}
 .dica-venc { font-size: 12px; color: var(--muted); margin: -8px 3px 12px; text-align: right; }
 .pecas { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 6px 10px; margin-bottom: 6px; }
 .peca { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }

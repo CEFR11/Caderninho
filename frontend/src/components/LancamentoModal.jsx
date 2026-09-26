@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta } from '../format'
+import { fmt, iniciais, corAvatar, dataHojeISO, dataHoraAgora, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta, somarMeses, dividirEmParcelas, nomeDaParcela } from '../format'
 import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ClienteModal from './ClienteModal'
@@ -7,6 +7,7 @@ import ReciboCard from './ReciboCard'
 import MicButton from './MicButton'
 
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫']
+const OPCOES_PARCELAS = [1, 2, 3, 4, 5, 6]
 
 export default function LancamentoModal({ aberto, clientes, clienteInicialId, tipoInicial, fiadoAlvo, aoFechar, aoRegistrar, aoDesfazer, aoCadastrarCliente, aoMostrarToast }) {
   const [clienteId, setClienteId] = useState(null)
@@ -17,6 +18,8 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const [vencimento, setVencimento] = useState('')
   // Peças já adicionadas neste fiado ("+ outra peça"); a que está sendo digitada entra no fim.
   const [pecas, setPecas] = useState([])
+  // Em quantas vezes o total do fiado vai ser pago (1 = à vista, sem parcelar).
+  const [parcelas, setParcelas] = useState(1)
   // Peça que o pagamento vai abater (vem do "Pagou esta" da ficha; pode ser desligada).
   const [alvo, setAlvo] = useState(null)
   const [erroSalvar, setErroSalvar] = useState(null)
@@ -40,6 +43,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
     setValor(fiadoAlvo ? paraDigitado(fiadoAlvo.restante) : '')
     setAlvo(fiadoAlvo ?? null)
     setPecas([])
+    setParcelas(1)
     setDescricao('')
     setData(dataHojeISO())
     setVencimento('')
@@ -88,6 +92,19 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   const saldoAtual = clienteAtual ? Number(clienteAtual.saldoDevedor) : 0
   const totalPecas = pecas.reduce((soma, p) => soma + p.valor, 0)
 
+  const totalDoFiado = totalPecas + valorDigitado(valor)
+
+  // "3x de R$ 60,00 · 26/10, 26/11 e 26/12" (ou "1ª de R$ 33,34 e 2 de R$ 33,33 · …" quando não divide certinho).
+  function resumoParcelas() {
+    const valores = dividirEmParcelas(totalDoFiado, parcelas)
+    const primeiro = vencimento || vencimentoPadrao(data, clienteAtual.diaPagamento)
+    const datas = valores.map((_, k) => dataCurta(somarMeses(primeiro, k)))
+    const quanto = valores[0] === valores[1]
+      ? `${parcelas}x de ${fmt(valores[0])}`
+      : `1ª de ${fmt(valores[0])} e ${parcelas - 1} de ${fmt(valores[1])}`
+    return `${quanto} · ${datas.slice(0, -1).join(', ')} e ${datas[datas.length - 1]}`
+  }
+
   function adicionarPeca() {
     const numero = valorDigitado(valor)
     if (numero <= 0) return
@@ -109,20 +126,33 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
       setConfirmarExcedente(true)
       return
     }
-    setSalvando(true)
-    setErroSalvar(null)
-    try {
-      const clienteAtualizado = await aoRegistrar(clienteAtual.id, itens.map((i) => ({
+    const parcelado = tipo === 'fiado' && parcelas > 1
+    // Parcelado: o total vira uma anotação por parcela, uma por mês a partir do primeiro vencimento.
+    const primeiroVencimento = vencimento || vencimentoPadrao(data, clienteAtual.diaPagamento)
+    const listaParcelas = parcelado
+      ? dividirEmParcelas(numero, parcelas).map((v, k) => ({
+        item: nomeDaParcela(itens, k + 1, parcelas),
+        valor: v,
+        vencimento: somarMeses(primeiroVencimento, k),
+      }))
+      : null
+    const anotacoes = parcelado
+      ? listaParcelas.map((p) => ({ tipo: 'FIADO', item: p.item, valorTotal: p.valor, data, vencimento: p.vencimento, fiadoPagoId: null }))
+      : itens.map((i) => ({
         tipo: tipo === 'fiado' ? 'FIADO' : 'PAGAMENTO',
         item: i.item,
         valorTotal: i.valor,
         data,
         vencimento: tipo === 'fiado' && vencimento ? vencimento : null,
         fiadoPagoId: tipo === 'pagamento' && alvo ? alvo.id : null,
-      })))
+      }))
+    setSalvando(true)
+    setErroSalvar(null)
+    try {
+      const clienteAtualizado = await aoRegistrar(clienteAtual.id, anotacoes, parcelado ? parcelas : 1)
       const saldoDepois = Number(clienteAtualizado.saldoDevedor)
       // As anotações recém-criadas são as de maior id na lista devolvida pelo backend.
-      const lancamentoIds = clienteAtualizado.lancamentos.map((l) => l.id).sort((a, b) => b - a).slice(0, itens.length)
+      const lancamentoIds = clienteAtualizado.lancamentos.map((l) => l.id).sort((a, b) => b - a).slice(0, anotacoes.length)
       setRecibo({
         lancamentoIds,
         nome: clienteAtual.nome,
@@ -130,10 +160,11 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
         tipo,
         item: itens.map((i) => i.item).join(' + '),
         itens,
+        parcelas: listaParcelas,
         pecaPaga: tipo === 'pagamento' && alvo ? alvo.item : null,
         valor: numero,
         data,
-        vencimento: tipo === 'fiado' ? (vencimento || vencimentoPadrao(data, clienteAtual.diaPagamento)) : null,
+        vencimento: tipo === 'fiado' && !parcelado ? primeiroVencimento : null,
         saldoDepois,
         emitidoEm: dataHoraAgora(),
       })
@@ -203,7 +234,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 {recibo.tipo === 'fiado' ? 'Fiado anotado' : 'Pagamento anotado'}
               </div>
               <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4 }}>
-                {recibo.nome} · {recibo.item} · {fmt(recibo.valor)}
+                {recibo.nome} · {recibo.item} · {fmt(recibo.valor)}{recibo.parcelas ? ` em ${recibo.parcelas.length}x` : ''}
               </div>
             </div>
             <button
@@ -246,6 +277,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 data: recibo.data,
                 item: recibo.item,
                 itens: recibo.itens,
+                parcelas: recibo.parcelas,
                 pecaPaga: recibo.pecaPaga,
                 tipoLancamento: recibo.tipo,
                 valor: recibo.valor,
@@ -362,7 +394,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
             {tipo === 'fiado' && (
               <>
                 <div className="data-linha">
-                  <span>Vai pagar quando? <i>(opcional)</i></span>
+                  <span>{parcelas > 1 ? '1ª parcela quando?' : 'Vai pagar quando?'} <i>(opcional)</i></span>
                   <span className="data-com-limpar">
                     <input type="date" value={vencimento} min={data} onChange={(e) => setVencimento(e.target.value)} />
                     {vencimento && <button className="limpar-data" onClick={() => setVencimento('')} aria-label="Tirar data">✕</button>}
@@ -370,8 +402,21 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 </div>
                 {!vencimento && clienteAtual && (
                   <div className="dica-venc">
-                    Sem data marcada: vence {dataCurta(vencimentoPadrao(data, clienteAtual.diaPagamento))}
+                    Sem data marcada: {parcelas > 1 ? 'a 1ª vence' : 'vence'} {dataCurta(vencimentoPadrao(data, clienteAtual.diaPagamento))}
                     {clienteAtual.diaPagamento ? ` (dia ${clienteAtual.diaPagamento} combinado)` : ' (30 dias)'}
+                  </div>
+                )}
+                {totalDoFiado > 0 && (
+                  <div className="parcelar">
+                    <div className="parcelar-t">Parcelar em</div>
+                    <div className="parcelas-opcoes">
+                      {OPCOES_PARCELAS.map((n) => (
+                        <button key={n} className={parcelas === n ? 'on' : ''} onClick={() => setParcelas(n)}>
+                          {n === 1 ? 'À vista' : `${n}x`}
+                        </button>
+                      ))}
+                    </div>
+                    {parcelas > 1 && clienteAtual && <div className="parcelar-resumo">{resumoParcelas()}</div>}
                   </div>
                 )}
               </>
@@ -404,8 +449,8 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
               {salvando ? 'Salvando…'
                 : !clienteAtual ? 'Escolha o cliente primeiro'
                   : tipo === 'pagamento' ? 'Anotar pagamento'
-                    : pecas.length === 0 ? 'Anotar fiado'
-                      : `Anotar ${pecas.length + (valorDigitado(valor) > 0 ? 1 : 0)} peças · ${fmt(totalPecas + valorDigitado(valor))}`}
+                    : (pecas.length === 0 ? 'Anotar fiado'
+                      : `Anotar ${pecas.length + (valorDigitado(valor) > 0 ? 1 : 0)} peças · ${fmt(totalDoFiado)}`) + (parcelas > 1 ? ` em ${parcelas}x` : '')}
             </button>
           </div>
         )}

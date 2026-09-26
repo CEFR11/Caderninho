@@ -164,3 +164,27 @@ export function vencimentoPadrao(dataCompraISO, diaPagamento) {
   if (candidato <= new Date(ano, mes - 1, dia)) candidato = diaNoMes(ano, mes)
   return paraISO(candidato)
 }
+
+// Mesmo dia `meses` meses depois; dia 31 em mês mais curto vira o último dia do mês.
+export function somarMeses(dataISO, meses) {
+  const [ano, mes, dia] = dataISO.split('-').map(Number)
+  const ultimoDia = new Date(ano, mes - 1 + meses + 1, 0).getDate()
+  const d = new Date(ano, mes - 1 + meses, Math.min(dia, ultimoDia))
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// Divide o total em `n` parcelas iguais, em centavos; o que sobra da divisão vai na primeira.
+export function dividirEmParcelas(total, n) {
+  const centavos = Math.round(total * 100)
+  const base = Math.floor(centavos / n)
+  return Array.from({ length: n }, (_, i) => (base + (i === 0 ? centavos - base * n : 0)) / 100)
+}
+
+// Nome de cada parcela: "Tênis (1/3)" com uma peça; "Parcela 1/3 · Camisa, Bermuda e mais 3" com várias.
+export function nomeDaParcela(itens, numero, total) {
+  if (itens.length === 1) return `${itens[0].item} (${numero}/${total})`
+  const nomes = itens.length <= 3
+    ? itens.map((i) => i.item).join(', ')
+    : `${itens[0].item}, ${itens[1].item} e mais ${itens.length - 2}`
+  return `Parcela ${numero}/${total} · ${nomes}`
+}

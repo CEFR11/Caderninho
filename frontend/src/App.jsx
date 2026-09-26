@@ -58,11 +58,13 @@ export default function App() {
     setTimeout(() => setToast(''), 1700)
   }
 
-  // lista: uma ou mais anotações do mesmo cliente (várias peças no mesmo fiado).
-  async function registrarLancamento(clienteId, lista) {
+  // lista: uma ou mais anotações do mesmo cliente (várias peças no mesmo fiado, ou as parcelas de um fiado parcelado).
+  async function registrarLancamento(clienteId, lista, parcelas = 1) {
     const clienteAtualizado = await api.registrarVarios(clienteId, lista)
     setRefreshKey((k) => k + 1)
-    mostrarToast(lista[0].tipo === 'FIADO' ? (lista.length > 1 ? `${lista.length} peças anotadas` : 'Fiado anotado') : 'Pagamento anotado')
+    mostrarToast(lista[0].tipo !== 'FIADO' ? 'Pagamento anotado'
+      : parcelas > 1 ? `Fiado anotado em ${parcelas}x`
+        : lista.length > 1 ? `${lista.length} peças anotadas` : 'Fiado anotado')
     return clienteAtualizado
   }
 

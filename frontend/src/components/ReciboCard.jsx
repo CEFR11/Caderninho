@@ -60,6 +60,16 @@ const ReciboCard = forwardRef(function ReciboCard({ dados }, ref) {
                   <LinhaRotulo rotulo={dados.tipoLancamento === 'fiado' ? 'Fiado' : 'Pagamento'} valor={fmt(dados.valor)} destaque />
                 </>
               )}
+            {dados.parcelas?.length > 1 && (
+              <>
+                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: '#7B819A', marginTop: 12 }}>
+                  Em {dados.parcelas.length}x
+                </div>
+                {dados.parcelas.map((p, idx) => (
+                  <LinhaRotulo key={idx} rotulo={`${idx + 1}ª · até ${dataCurta(p.vencimento)}`} valor={fmt(p.valor)} />
+                ))}
+              </>
+            )}
             {dados.pecaPaga && <LinhaRotulo rotulo="Abateu" valor={dados.pecaPaga} />}
             {dados.vencimento && <LinhaRotulo rotulo="Pagar até" valor={dataCurta(dados.vencimento)} />}
           </>
