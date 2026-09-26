@@ -88,11 +88,12 @@ public class FinanceiroService {
 
     public List<FilaClienteDTO> gerarFila(String filtro) {
         List<Cliente> clientes = clienteRepository.findAll().stream().filter(c -> c.getSaldoDevedor().compareTo(BigDecimal.ZERO) > 0).toList();
-        List<FilaClienteDTO> filaClienteDTO = clientes.stream().map(c -> new FilaClienteDTO(c.getId(), c.getNome(), c.getSaldoDevedor(), c.getDiasDevendo(), c.getDevendoDesde().orElse(null))).toList();
+        List<FilaClienteDTO> filaClienteDTO = clientes.stream().map(c -> new FilaClienteDTO(c.getId(), c.getNome(), c.getSaldoDevedor(), c.getDiasDevendo(), c.getDevendoDesde().orElse(null),
+                c.getVencimento().orElse(null), c.getDiasAtraso(), c.getDiaPagamento())).toList();
 
         switch (filtro) {
             case "atrasados":
-                return filaClienteDTO.stream().filter(c -> c.dias() >= 30).sorted(Comparator.comparing(FilaClienteDTO::dias).reversed()).toList();
+                return filaClienteDTO.stream().filter(c -> c.diasAtraso() > 0).sorted(Comparator.comparing(FilaClienteDTO::diasAtraso).reversed()).toList();
 
             case "valor":
                 return filaClienteDTO.stream().sorted(Comparator.comparing(FilaClienteDTO::saldo).reversed()).toList();
@@ -102,8 +103,12 @@ public class FinanceiroService {
                 return filaClienteDTO.stream().sorted(Comparator.comparing(FilaClienteDTO::dias)).toList();
 
             default:
-                // Valor × idade da dívida. O +1 faz a dívida de hoje ainda contar pelo valor, em vez de ir para o fim.
-                return filaClienteDTO.stream().sorted(Comparator.comparing((FilaClienteDTO c) -> c.saldo().multiply(BigDecimal.valueOf(c.dias() + 1))).reversed()).toList();
+                // Primeiro os atrasados (valor × dias de atraso); depois quem vence antes.
+                Comparator<FilaClienteDTO> atrasadosPrimeiro = Comparator.comparing((FilaClienteDTO c) -> c.diasAtraso() == 0);
+                Comparator<FilaClienteDTO> pesoDoAtraso = Comparator.comparing((FilaClienteDTO c) -> c.saldo().multiply(BigDecimal.valueOf(c.diasAtraso()))).reversed();
+                return filaClienteDTO.stream()
+                        .sorted(atrasadosPrimeiro.thenComparing(pesoDoAtraso).thenComparing(FilaClienteDTO::vencimento))
+                        .toList();
 
         }
     }

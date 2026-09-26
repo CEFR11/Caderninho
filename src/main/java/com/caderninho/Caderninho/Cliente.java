@@ -19,8 +19,14 @@ public class Cliente {
     private Long id;
 
 
+    // Prazo usado quando o cliente não tem dia combinado para pagar.
+    public static final int PRAZO_PADRAO_DIAS = 30;
+
     private String nome;
     private String telefone;
+
+    // Dia do mês combinado para pagar (1 a 31). Nulo = sem dia combinado, vale o prazo padrão.
+    private Integer diaPagamento;
 
 
     @OneToMany(mappedBy = "cliente")
@@ -40,9 +46,10 @@ public class Cliente {
         this.telefone = telefone;
     }
 
-    public void atualizarDados(String nome, String telefone) {
+    public void atualizarDados(String nome, String telefone, Integer diaPagamento) {
         this.nome = nome;
         this.telefone = telefone;
+        this.diaPagamento = diaPagamento;
     }
 
     public void adicionarLancamentos(Lancamento lancamento) {
@@ -92,6 +99,36 @@ public class Cliente {
 
     public long getDiasDevendo() {
         return getDevendoDesde().map(desde -> ChronoUnit.DAYS.between(desde, LocalDate.now())).orElse(0L);
+    }
+
+    // Quando a dívida atual vence: o primeiro dia combinado depois de "deve desde"
+    // (ou "deve desde" + prazo padrão, se não houver dia combinado).
+    public Optional<LocalDate> getVencimento() {
+        return getDevendoDesde().map(desde -> {
+            if (diaPagamento == null) {
+                return desde.plusDays(PRAZO_PADRAO_DIAS);
+            }
+            LocalDate candidato = diaNoMes(desde, diaPagamento);
+            if (!candidato.isAfter(desde)) {
+                candidato = diaNoMes(desde.plusMonths(1), diaPagamento);
+            }
+            return candidato;
+        });
+    }
+
+    // Dia 31 em mês de 30 dias (ou fevereiro) vira o último dia do mês.
+    private static LocalDate diaNoMes(LocalDate referencia, int dia) {
+        return referencia.withDayOfMonth(Math.min(dia, referencia.lengthOfMonth()));
+    }
+
+    public long getDiasAtraso() {
+        return getVencimento()
+                .map(vencimento -> Math.max(0, ChronoUnit.DAYS.between(vencimento, LocalDate.now())))
+                .orElse(0L);
+    }
+
+    public Integer getDiaPagamento() {
+        return diaPagamento;
     }
 
     public Long getId() {

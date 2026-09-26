@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import { iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta, rotuloSaldo, valorSaldo, anotacoesEmAberto } from '../format'
+import { iniciais, corAvatar, dataRelativa, dataHoraAgora, dataCurta, rotuloSaldo, valorSaldo, anotacoesEmAberto, situacaoVencimento } from '../format'
 import { linkWhatsApp, mensagemExtrato, mensagemCobranca } from '../whatsapp'
 import { gerarEcompartilharImagem } from '../reciboImagem'
 import ReciboCard from '../components/ReciboCard'
@@ -29,6 +29,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
   if (erro) return <div className="screen"><div className="estado erro">{erro}</div></div>
 
   const saldo = Number(cliente.saldoDevedor)
+  const situacao = situacaoVencimento(cliente)
   const extrato = [...cliente.lancamentos].sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0))
 
   async function compartilharImagemExtrato() {
@@ -53,10 +54,12 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
         <div className="av" style={{ background: corAvatar(cliente.id) }}>{iniciais(cliente.nome)}</div>
         <div className="nm">{cliente.nome}</div>
         <div className="tel">{cliente.telefone}</div>
+        <div className="tel">{cliente.diaPagamento ? `Paga todo dia ${cliente.diaPagamento}` : 'Sem dia combinado (prazo de 30 dias)'}</div>
         <div className={`ficha-sal ${saldo > 0 ? '' : 'ok'}`}>
           <div className="l">{rotuloSaldo(saldo)}</div>
           <div className="v">{valorSaldo(saldo)}</div>
           {cliente.devendoDesde && <div className="desde">deve desde {dataCurta(cliente.devendoDesde)}</div>}
+          {situacao && <div className={`desde situacao ${situacao.classe}`}>{situacao.texto}</div>}
         </div>
         <div className="acts">
           <button className="btn debt" onClick={() => aoAbrirLancamento('fiado', cliente.id)}>+ Fiado</button>

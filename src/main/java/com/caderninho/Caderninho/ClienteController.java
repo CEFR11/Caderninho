@@ -26,6 +26,7 @@ public class ClienteController {
     @PostMapping
     public ClienteDTO cadastrarCliente(@Valid @RequestBody NovoClienteDTO novoCliente) {
         Cliente cliente = new Cliente(novoCliente.nome(), novoCliente.telefone());
+        cliente.atualizarDados(novoCliente.nome(), novoCliente.telefone(), novoCliente.diaPagamento());
         cliente = clienteRepository.save(cliente);
         return clienteService.converterClienteDTO(cliente);
 
@@ -56,7 +57,7 @@ public class ClienteController {
         if (cliente == null) {
             return ResponseEntity.notFound().build();
         }
-        cliente.atualizarDados(dados.nome(), dados.telefone());
+        cliente.atualizarDados(dados.nome(), dados.telefone(), dados.diaPagamento());
         cliente = clienteRepository.save(cliente);
         return ResponseEntity.ok(clienteService.converterClienteDTO(cliente));
     }

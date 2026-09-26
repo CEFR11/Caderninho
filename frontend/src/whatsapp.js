@@ -34,10 +34,12 @@ export function mensagemExtrato(cliente) {
 }
 
 export function mensagemCobranca(cliente) {
-  const desde = cliente.devendoDesde ? ` (desde ${dataCurta(cliente.devendoDesde)})` : ''
+  const vencimento = !cliente.vencimento ? ''
+    : Number(cliente.diasAtraso) > 0 ? `, que venceu em ${dataCurta(cliente.vencimento)}`
+      : `, com vencimento em ${dataCurta(cliente.vencimento)}`
   return [
     `Oi, ${cliente.nome}! Tudo bem?`,
-    `Passando para lembrar da sua conta aqui: ${fmt(cliente.saldoDevedor)}${desde}.`,
+    `Passando para lembrar da sua conta aqui: ${fmt(cliente.saldoDevedor)}${vencimento}.`,
     'Quando puder, passa aqui para acertar. Obrigado!',
   ].join('\n')
 }

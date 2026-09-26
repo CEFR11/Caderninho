@@ -73,7 +73,7 @@ export default function Inicio({ refreshKey }) {
             <div className="alert">
               <div className="ic">!</div>
               <div className="tx">
-                <b>{atrasados.length} cliente{atrasados.length > 1 ? 's' : ''}</b> {atrasados.length > 1 ? 'devem' : 'deve'} há mais de 30 dias.
+                <b>{atrasados.length} cliente{atrasados.length > 1 ? 's' : ''}</b> {atrasados.length > 1 ? 'estão' : 'está'} com o pagamento atrasado.
                 Juntos somam <b>{fmt(somaAtrasados)}</b>.
               </div>
             </div>

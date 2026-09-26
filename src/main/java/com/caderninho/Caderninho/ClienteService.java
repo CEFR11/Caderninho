@@ -28,8 +28,11 @@ public class ClienteService {
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getTelefone(),
+                cliente.getDiaPagamento(),
                 cliente.getSaldoDevedor(),
                 cliente.getDevendoDesde().orElse(null),
+                cliente.getVencimento().orElse(null),
+                cliente.getDiasAtraso(),
                 lancamentoDTO
         );
 

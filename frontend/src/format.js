@@ -136,3 +136,25 @@ export function anotacoesEmAberto(lancamentos) {
   })
   return ordenados.slice(inicio).reverse()
 }
+
+// Dias de hoje até a data (negativo se já passou).
+export function diasAte(dataISO) {
+  const [ano, mes, dia] = dataISO.split('-').map(Number)
+  const hoje = new Date()
+  const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())
+  return Math.round((new Date(ano, mes - 1, dia) - inicioDeHoje) / 86400000)
+}
+
+// Situação da conta pelo vencimento (dia combinado ou prazo padrão de 30 dias).
+export function situacaoVencimento({ vencimento, diasAtraso }) {
+  if (!vencimento) return null
+  const atraso = Number(diasAtraso)
+  if (atraso > 0) {
+    return { classe: 'late', rotulo: 'atrasado', texto: `venceu ${dataCurta(vencimento)} · ${atraso} dia${atraso > 1 ? 's' : ''} de atraso` }
+  }
+  const faltam = diasAte(vencimento)
+  if (faltam <= 5) {
+    return { classe: 'soon', rotulo: 'vence logo', texto: faltam === 0 ? 'vence hoje' : `vence ${dataCurta(vencimento)} · faltam ${faltam} dia${faltam > 1 ? 's' : ''}` }
+  }
+  return { classe: 'ok', rotulo: 'em dia', texto: `vence ${dataCurta(vencimento)}` }
+}

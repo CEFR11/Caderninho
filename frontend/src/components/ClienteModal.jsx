@@ -6,6 +6,7 @@ import { formatarTelefone, normalizarNome, soDigitos } from '../format'
 export default function ClienteModal({ aberto, clienteInicial = null, clientes = [], aoFechar, aoSalvar, aoUsarExistente, aoExcluir }) {
   const [nome, setNome] = useState('')
   const [telefone, setTelefone] = useState('')
+  const [diaPagamento, setDiaPagamento] = useState('')
   const [erro, setErro] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [parecido, setParecido] = useState(null)
@@ -15,6 +16,7 @@ export default function ClienteModal({ aberto, clienteInicial = null, clientes =
     if (!aberto) return
     setNome(clienteInicial?.nome ?? '')
     setTelefone(clienteInicial ? formatarTelefone(clienteInicial.telefone) : '')
+    setDiaPagamento(clienteInicial?.diaPagamento ?? '')
     setErro('')
     setParecido(null)
     setConfirmandoExcluir(false)
@@ -46,7 +48,7 @@ export default function ClienteModal({ aberto, clienteInicial = null, clientes =
     setSalvando(true)
     setErro('')
     try {
-      await aoSalvar({ nome: nome.trim(), telefone: telefone.trim() })
+      await aoSalvar({ nome: nome.trim(), telefone: telefone.trim(), diaPagamento: diaPagamento ? Number(diaPagamento) : null })
     } catch (e) {
       setErro(e.message || 'Não foi possível salvar o cliente.')
     } finally {
@@ -90,6 +92,16 @@ export default function ClienteModal({ aberto, clienteInicial = null, clientes =
             onChange={(e) => { setTelefone(formatarTelefone(e.target.value)); setParecido(null) }}
             inputMode="tel"
           />
+        </div>
+
+        <div className="campo-label">Dia combinado para pagar</div>
+        <div className="desc campo">
+          <select className="campo-select" value={diaPagamento} onChange={(e) => setDiaPagamento(e.target.value)}>
+            <option value="">Sem dia combinado (vence em 30 dias)</option>
+            {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
+              <option key={dia} value={dia}>Todo dia {dia}</option>
+            ))}
+          </select>
         </div>
 
         {erro && <div className="form-erro">{erro}</div>}

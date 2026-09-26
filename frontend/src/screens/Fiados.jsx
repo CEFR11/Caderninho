@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import {api} from '../api'
-import {fmt, dataCurta} from '../format'
+import {fmt, situacaoVencimento} from '../format'
 
 const FILTROS = [
     {id: 'prioridade', label: 'Prioridade'},
@@ -29,7 +29,7 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
         <div className="screen">
             <div className="total-strip">
                 <div className="l">
-                    {filtro === 'atrasados' ? 'Devem há mais de 30 dias' : 'Para cobrar'}
+                    {filtro === 'atrasados' ? 'Com pagamento atrasado' : 'Para cobrar'}
                     {' · '}{lista.length} cliente{lista.length !== 1 ? 's' : ''}
                 </div>
                 <div className="r">{fmt(total)}</div>
@@ -54,11 +54,9 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
                 lista.length === 0
                     ? <div className="empty">Ninguém devendo. Tudo quitado 🎉</div>
                     : <div className="fila-lista">{lista.map((c, idx) => {
-                        const dias = Number(c.dias)
-                        const urgencia = dias >= 30 ? 'u-hi' : dias >= 10 ? 'u-md' : 'u-lo'
-                        const flagClasse = dias >= 30 ? 'late' : dias >= 10 ? 'soon' : 'ok'
-                        const flagTexto = dias >= 30 ? 'atrasado' : dias >= 10 ? 'atenção' : 'recente'
-                        const largura = Math.min(100, Math.round((dias / 45) * 100))
+                        const situacao = situacaoVencimento(c)
+                        const urgencia = { late: 'u-hi', soon: 'u-md', ok: 'u-lo' }[situacao.classe]
+                        const largura = situacao.classe === 'late' ? Math.min(100, 40 + Number(c.diasAtraso) * 2) : situacao.classe === 'soon' ? 30 : 10
 
                         return (
                             <div className="queue-item" key={c.id} onClick={() => aoAbrirFicha(c.id)}>
@@ -66,9 +64,9 @@ export default function Fiados({ refreshKey, aoAbrirFicha }) {
                                 <div className="body">
                                     <div className="nm">{c.nome}</div>
                                     <div className="meta">
-                                        <span className={`flag ${flagClasse}`}>{flagTexto}</span>
+                                        <span className={`flag ${situacao.classe}`}>{situacao.rotulo}</span>
                                         {' '}
-                                        {dias === 0 ? 'deve desde hoje' : `deve desde ${dataCurta(c.devendoDesde)} · ${dias} dia${dias > 1 ? 's' : ''}`}
+                                        {situacao.texto}
                                     </div>
                                     <div className={`urg ${urgencia}`}><span style={{width: `${largura}%`}}/></div>
                                 </div>
