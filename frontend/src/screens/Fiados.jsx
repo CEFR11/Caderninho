@@ -22,17 +22,25 @@ function valorDoFiltro(c, filtro) {
 
 export default function Fiados({ refreshKey, aoAbrirFicha, filtroInicial = 'prioridade' }) {
     const [filtro, setFiltro] = useState(filtroInicial)
-    const [lista, setLista] = useState([])
+    // A lista guarda de qual filtro ela veio: logo depois de trocar o filtro, a lista antiga ainda está aqui
+    // e não pode ser desenhada com as regras do filtro novo (ex.: no "Este mês" quem não vence no mês não tem data).
+    const [carregada, setCarregada] = useState({filtro: null, lista: []})
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState(null)
 
     useEffect(() => {
+        // Trocou de filtro antes da resposta chegar: a resposta velha é descartada.
+        let ignorar = false
         setCarregando(true)
+        setErro(null)
         api.fila(filtro)
-            .then(setLista)
-            .catch(() => setErro('Não foi possível carregar a fila. Confira se o backend está rodando.'))
-            .finally(() => setCarregando(false))
+            .then((lista) => { if (!ignorar) setCarregada({filtro, lista}) })
+            .catch(() => { if (!ignorar) setErro('Não foi possível carregar a fila. Confira se o backend está rodando.') })
+            .finally(() => { if (!ignorar) setCarregando(false) })
+        return () => { ignorar = true }
     }, [filtro, refreshKey])
+
+    const lista = carregada.filtro === filtro ? carregada.lista : []
 
     const total = lista.reduce((s, c) => s + valorDoFiltro(c, filtro), 0)
 
@@ -58,16 +66,17 @@ export default function Fiados({ refreshKey, aoAbrirFicha, filtroInicial = 'prio
                 ))}
             </div>
 
-            {carregando && <div className="estado">Carregando…</div>}
+            {(carregando || carregada.filtro !== filtro) && !erro && <div className="estado">Carregando…</div>}
             {erro && <div className="estado erro">{erro}</div>}
 
-            {!carregando && !erro && (
+            {!carregando && !erro && carregada.filtro === filtro && (
                 lista.length === 0
                     ? <div className="empty">{VAZIO[filtro] ?? 'Ninguém devendo. Tudo quitado 🎉'}</div>
                     : <div className="fila-lista">{lista.map((c, idx) => {
-                        const situacao = filtro === 'mes'
+                        // Sem data de vencimento, situacaoVencimento devolve null: mostra sem selo em vez de quebrar a tela.
+                        const situacao = (filtro === 'mes'
                             ? situacaoVencimento({vencimento: c.proximoVencimentoNoMes, diasAtraso: 0})
-                            : situacaoVencimento(c)
+                            : situacaoVencimento(c)) ?? {classe: 'ok', rotulo: 'sem data', texto: ''}
                         const valor = valorDoFiltro(c, filtro)
                         const urgencia = { late: 'u-hi', soon: 'u-md', ok: 'u-lo' }[situacao.classe]
                         const largura = situacao.classe === 'late' ? Math.min(100, 40 + Number(c.diasAtraso) * 2) : situacao.classe === 'soon' ? 30 : 10
