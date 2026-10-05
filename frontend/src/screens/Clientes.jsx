@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { fmt, iniciais, corAvatar, soDigitos, digitosNacionais, telefoneComPais } from '../format'
+import { fmt, iniciais, corAvatar, soDigitos, digitosNacionais, telefoneComPais, normalizarNome } from '../format'
 import MicButton from '../components/MicButton'
 
 const FILTROS = [
@@ -28,7 +28,7 @@ export default function Clientes({ refreshKey, aoAbrirFicha, aoAbrirNovoCliente,
   if (erro) return <div className="screen"><div className="estado erro">{erro}</div></div>
 
   const digitosBusca = soDigitos(busca)
-  let lista = clientes.filter((c) => c.nome.toLowerCase().includes(busca.toLowerCase())
+  let lista = clientes.filter((c) => normalizarNome(c.nome).includes(normalizarNome(busca))
     || (digitosBusca.length >= 3 && digitosNacionais(c.telefone).includes(digitosNacionais(busca))))
   if (filtro === 'devendo') lista = lista.filter((c) => Number(c.saldoDevedor) > 0)
   if (filtro === 'quites') lista = lista.filter((c) => Number(c.saldoDevedor) <= 0)

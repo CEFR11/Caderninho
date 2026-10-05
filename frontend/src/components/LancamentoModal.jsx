@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fmt, iniciais, corAvatar, dataHojeISO, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta, somarMeses, dividirEmParcelas, nomeDaParcela, telefoneComPais } from '../format'
+import { fmt, iniciais, corAvatar, dataHojeISO, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta, somarMeses, dividirEmParcelas, nomeDaParcela, telefoneComPais, normalizarNome } from '../format'
 import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
 import ClienteModal from './ClienteModal'
 import MicButton from './MicButton'
@@ -227,7 +227,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
   }
 
   const listaPicker = clientesEfetivos
-    .filter((c) => c.nome.toLowerCase().includes(buscaPicker.toLowerCase()))
+    .filter((c) => normalizarNome(c.nome).includes(normalizarNome(buscaPicker)))
     .sort((a, b) => a.nome.localeCompare(b.nome))
 
   return (
