@@ -7,7 +7,7 @@ Backend de um app de controle de fiado, feito para digitalizar o "caderninho de 
 * Java 25
 * Spring Boot 4.1.0
 * Spring Data JPA
-* H2 Database no desenvolvimento (arquivo local: `./data/caderninho`); PostgreSQL em produção (perfil `prod`)
+* PostgreSQL (desenvolvimento: container do `compose.yaml`, ligado sozinho pelo Spring; produção: Neon, perfil `prod`)
 * Maven
 
 ## Funcionalidades
@@ -20,6 +20,8 @@ Backend de um app de controle de fiado, feito para digitalizar o "caderninho de 
 * Endpoints financeiros: resumo (total a receber, recebido/fiado por período) e fila de clientes por prioridade de cobrança
 
 ## Como rodar
+
+Precisa do Docker Desktop aberto: ao rodar o backend (ou os testes), o Spring sobe sozinho o Postgres do `compose.yaml`.
 
 ```bash
 ./mvnw spring-boot:run

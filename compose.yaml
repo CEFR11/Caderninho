@@ -1,0 +1,17 @@
+# Postgres do desenvolvimento. O Spring sobe este container sozinho ao rodar o backend
+# (precisa do Docker Desktop aberto). Em produção o banco é a Neon, este arquivo não é usado.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: caderninho
+      POSTGRES_USER: caderninho
+      POSTGRES_PASSWORD: caderninho
+    ports:
+      - "5432:5432"
+    volumes:
+      # Os dados ficam neste volume e sobrevivem quando o container para.
+      - caderninho-dados:/var/lib/postgresql/data
+
+volumes:
+  caderninho-dados:
