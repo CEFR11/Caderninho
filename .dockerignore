@@ -1,0 +1,15 @@
+# Só o backend entra na imagem. Fica de fora o que é local, pesado ou secreto.
+.git
+target
+frontend
+docs
+HELP.md
+
+# Banco H2 local e senha da loja: nunca vão para a imagem.
+data
+config
+
+.claude
+.idea
+.vscode
+*.iml
