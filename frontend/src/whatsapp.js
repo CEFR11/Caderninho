@@ -4,10 +4,21 @@ import { fmt, dataCurta, dataCompleta, digitosNacionais, comprasEmAberto, diasAt
 // Sem ele, as mensagens saem sem assinatura.
 const NOME_LOJA = import.meta.env.VITE_NOME_LOJA?.trim() || ''
 
+// No computador, o link wa.me abre uma aba nova do WhatsApp Web a cada envio (o WhatsApp Web não deixa
+// outro site reaproveitar a aba dele). Então lá a mensagem vai direto para o WhatsApp Desktop (whatsapp://),
+// que precisa estar instalado. No celular o wa.me já abre o app.
+const NO_CELULAR = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
 export function linkWhatsApp(telefone, mensagem) {
   const numero = `55${digitosNacionais(telefone)}`
-  return `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`
+  const texto = encodeURIComponent(mensagem)
+  return NO_CELULAR
+    ? `https://wa.me/${numero}?text=${texto}`
+    : `whatsapp://send?phone=${numero}&text=${texto}`
 }
+
+// O whatsapp:// abre o app sem aba; com _blank o navegador deixaria uma aba vazia para trás.
+export const ALVO_WHATSAPP = NO_CELULAR ? '_blank' : undefined
 
 // No WhatsApp, *texto* sai em negrito.
 function linhaSaldo(saldo) {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { fmt, iniciais, corAvatar, dataHojeISO, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta, somarMeses, dividirEmParcelas, nomeDaParcela, telefoneComPais, normalizarNome } from '../format'
-import { linkWhatsApp, mensagemRecibo } from '../whatsapp'
+import { linkWhatsApp, mensagemRecibo, ALVO_WHATSAPP } from '../whatsapp'
 import ClienteModal from './ClienteModal'
 import MicButton from './MicButton'
 
@@ -254,7 +254,7 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
               className="cf"
               style={{ background: 'var(--paid)', display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}
               href={linkWhatsApp(recibo.telefone, mensagemRecibo(recibo))}
-              target="_blank"
+              target={ALVO_WHATSAPP}
               rel="noopener noreferrer"
             >
               Enviar comprovante pelo WhatsApp

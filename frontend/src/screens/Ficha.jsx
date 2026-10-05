@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { iniciais, corAvatar, dataRelativa, dataCurta, rotuloSaldo, valorSaldo, situacaoVencimento, fmt, telefoneComPais, comprasEmAberto, prazoDaParcela } from '../format'
-import { linkWhatsApp, mensagemExtrato, mensagemCobranca } from '../whatsapp'
+import { linkWhatsApp, mensagemExtrato, mensagemCobranca, ALVO_WHATSAPP } from '../whatsapp'
 import EditarLancamentoModal from '../components/EditarLancamentoModal'
 import ClienteModal from '../components/ClienteModal'
 import ValorAnotacao from '../components/ValorAnotacao'
@@ -56,7 +56,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
           <a
             className="btn cobrar"
             href={linkWhatsApp(cliente.telefone, mensagemCobranca(cliente))}
-            target="_blank"
+            target={ALVO_WHATSAPP}
             rel="noopener noreferrer"
           >
             Cobrar pelo WhatsApp
@@ -66,7 +66,7 @@ export default function Ficha({ clienteId, refreshKey, embutida = false, aoVolta
           className="btn"
           style={{ background: 'var(--primary)', color: '#fff', display: 'block', width: '100%', marginTop: 9, boxSizing: 'border-box', textAlign: 'center', textDecoration: 'none' }}
           href={linkWhatsApp(cliente.telefone, mensagemExtrato(cliente))}
-          target="_blank"
+          target={ALVO_WHATSAPP}
           rel="noopener noreferrer"
         >
           Enviar extrato pelo WhatsApp
