@@ -7,7 +7,7 @@ Backend de um app de controle de fiado, feito para digitalizar o "caderninho de 
 * Java 25
 * Spring Boot 4.1.0
 * Spring Data JPA
-* H2 Database (arquivo local: `./data/caderninho`)
+* H2 Database no desenvolvimento (arquivo local: `./data/caderninho`); PostgreSQL em produção (perfil `prod`)
 * Maven
 
 ## Funcionalidades
