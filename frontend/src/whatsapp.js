@@ -4,6 +4,24 @@ import { fmt, dataCurta, dataCompleta, digitosNacionais, comprasEmAberto, diasAt
 // Sem ele, as mensagens saem sem assinatura.
 const NOME_LOJA = import.meta.env.VITE_NOME_LOJA?.trim() || ''
 
+// Dados do Pix que vão na cobrança e no extrato (VITE_PIX_* no .env / na Vercel). Sem a chave, não sai nada.
+// O nome e o banco ajudam o cliente a conferir no app do banco que está pagando a loja certa.
+const PIX = {
+  chave: import.meta.env.VITE_PIX_CHAVE?.trim() || '',
+  nome: import.meta.env.VITE_PIX_NOME?.trim() || '',
+  banco: import.meta.env.VITE_PIX_BANCO?.trim() || '',
+}
+
+function linhasPix() {
+  if (!PIX.chave) return []
+  return [
+    '*Pague pelo Pix:*',
+    `Chave: ${PIX.chave}`,
+    ...(PIX.nome ? [`Nome: ${PIX.nome}`] : []),
+    ...(PIX.banco ? [`Banco: ${PIX.banco}`] : []),
+  ]
+}
+
 // No computador, o link wa.me abre uma aba nova do WhatsApp Web a cada envio (o WhatsApp Web não deixa
 // outro site reaproveitar a aba dele). Então lá a mensagem vai direto para o WhatsApp Desktop (whatsapp://),
 // que precisa estar instalado. No celular o wa.me já abre o app.
@@ -114,6 +132,7 @@ export function mensagemExtrato(cliente) {
     '',
     `*Total em aberto: ${fmt(cliente.saldoDevedor)}*`,
     '',
+    ...(PIX.chave ? [...linhasPix(), ''] : []),
     'Qualquer dúvida, estamos à disposição.',
   ])
 }
@@ -154,7 +173,8 @@ export function mensagemCobranca(cliente) {
     ...itens.map(linhaCobranca),
     ...(sobra ? ['', 'As demais parcelas seguem nas datas combinadas.'] : []),
     '',
-    'Quando puder, é só passar aqui ou nos avisar como prefere pagar.',
+    // Com Pix configurado, a mensagem já diz como pagar; sem ele, convida o cliente a combinar.
+    ...(PIX.chave ? [...linhasPix(), ''] : ['Quando puder, é só passar aqui ou nos avisar como prefere pagar.']),
     'Se o pagamento já foi feito, por favor desconsidere esta mensagem.',
     '',
     'Obrigado!',
