@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { fmt, iniciais, corAvatar, dataHojeISO, valorDigitado, paraDigitado, vencimentoPadrao, dataCurta, somarMeses, dividirEmParcelas, nomeDaParcela, telefoneComPais, normalizarNome } from '../format'
 import { linkWhatsApp, mensagemRecibo, ALVO_WHATSAPP } from '../whatsapp'
 import ClienteModal from './ClienteModal'
-import MicButton from './MicButton'
 
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫']
 const OPCOES_PARCELAS = [1, 2, 3, 4, 5, 6]
@@ -294,7 +293,6 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 onChange={(e) => setBuscaPicker(e.target.value)}
                 autoFocus
               />
-              <MicButton aoOuvir={setBuscaPicker} />
             </div>
 
             <button className="add-cliente" onClick={() => setNovoClienteAberto(true)}>
@@ -363,7 +361,6 @@ export default function LancamentoModal({ aberto, clientes, clienteInicialId, ti
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
               />
-              <MicButton aoOuvir={(texto) => setDescricao(texto.charAt(0).toUpperCase() + texto.slice(1))} />
             </div>
             {tipo === 'fiado' && (
               <button className="outra-peca" onClick={adicionarPeca} disabled={valorDigitado(valor) <= 0}>
