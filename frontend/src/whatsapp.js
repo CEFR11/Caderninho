@@ -15,7 +15,7 @@ const PIX = {
 function linhasPix() {
   if (!PIX.chave) return []
   return [
-    '*Pague pelo Pix:*',
+    'Para pagamento no *Pix*, segue os dados:',
     `Chave: ${PIX.chave}`,
     ...(PIX.nome ? [`Nome: ${PIX.nome}`] : []),
     ...(PIX.banco ? [`Banco: ${PIX.banco}`] : []),
