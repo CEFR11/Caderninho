@@ -13,11 +13,11 @@ public class AutenticacaoConfig implements WebMvcConfigurer {
         this.autenticacaoInterceptor = autenticacaoInterceptor;
     }
 
-    // Tudo exige login, menos a própria tela de login e a página de erro do Spring.
+    // Tudo exige login, menos a própria tela de login, a página de erro do Spring e o /ping (mantém o servidor acordado).
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(autenticacaoInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/auth/login", "/error");
+                .excludePathPatterns("/auth/login", "/error", "/ping");
     }
 }
