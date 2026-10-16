@@ -14,6 +14,7 @@
   --paid-soft: #E6F6F0;
   --warn: #F5A524;
   --warn-soft: #FEF4E2;
+  --font-num: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* touch-action: manipulation tira o zoom do toque duplo (teclado do valor), mas deixa a pinça funcionar. */
@@ -91,7 +92,7 @@ body {
 }
 .hero .lbl { font-size: 12.5px; font-weight: 500; color: #CFE4FF; letter-spacing: .3px; }
 .hero .big {
-  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 40px; letter-spacing: -1.5px;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 40px; letter-spacing: -1.5px;
   margin-top: 3px; line-height: 1;
 }
 .hero .sub { font-size: 12.5px; color: #C7DFFF; margin-top: 7px; }
@@ -103,7 +104,7 @@ body {
 .quickgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .qcard { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 13px 14px; }
 .qcard .t { font-size: 12px; color: var(--muted); font-weight: 500; }
-.qcard .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 21px; margin-top: 4px; letter-spacing: -.5px; }
+.qcard .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 21px; margin-top: 4px; letter-spacing: -.5px; }
 .qcard .v.debt { color: var(--debt); }
 .qcard .v.paid { color: var(--paid); }
 
@@ -114,7 +115,7 @@ body {
 }
 .vence-mes:disabled { cursor: default; }
 .vence-mes .t { font-size: 12px; color: var(--muted); font-weight: 500; }
-.vence-mes .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 25px; margin-top: 4px; letter-spacing: -.5px; color: var(--debt); }
+.vence-mes .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 25px; margin-top: 4px; letter-spacing: -.5px; color: var(--debt); }
 .vence-mes .s { font-size: 12px; color: var(--muted); margin-top: 3px; }
 .vence-mes:not(:disabled) .s { color: var(--primary); font-weight: 600; }
 
@@ -166,7 +167,7 @@ body {
   border-radius: 16px; padding: 14px 16px; margin-bottom: 14px;
 }
 .total-strip .l { font-size: 12.5px; color: #A5AAC4; }
-.total-strip .r { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 22px; letter-spacing: -.6px; }
+.total-strip .r { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 22px; letter-spacing: -.6px; }
 
 /* ---------- QUEUE (fila de prioridade) ---------- */
 .queue-item {
@@ -176,14 +177,14 @@ body {
 }
 .queue-item:active { transform: scale(.985); }
 .queue-item .rank {
-  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13px; color: var(--muted);
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 13px; color: var(--muted);
   width: 22px; flex: 0 0 auto; text-align: center;
 }
 .queue-item .body { flex: 1; min-width: 0; }
 .queue-item .nm { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13.5px; letter-spacing: -.2px; }
 .queue-item .meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .queue-item .amt {
-  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 17px; color: var(--debt); text-align: right; flex: 0 0 auto;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 17px; color: var(--debt); text-align: right; flex: 0 0 auto;
 }
 .queue-item .amt-sub { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; }
 .urg { height: 3px; border-radius: 99px; margin-top: 7px; background: var(--line); overflow: hidden; }
@@ -205,7 +206,7 @@ body {
 .search input::placeholder { color: #A9AEC2; }
 .campo-label { font-size: 12.5px; font-weight: 600; color: var(--muted); margin: 0 3px 5px; }
 .desc.campo { margin: 0 0 12px; }
-.campo-prefixo { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 15px; color: var(--muted); }
+.campo-prefixo { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; color: var(--muted); }
 .apagar {
   width: 100%; border: none; background: none; margin-top: 10px; padding: 10px 0; cursor: pointer;
   font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13px; color: var(--debt); border-radius: 13px;
@@ -254,7 +255,7 @@ body {
 .fechar-resumo { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 6px 12px; margin-bottom: 14px; }
 .fechar-total { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 0 6px; }
 .fechar-total span { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 15px; }
-.fechar-total b { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 32px; color: var(--debt); letter-spacing: -1px; }
+.fechar-total b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 32px; color: var(--debt); letter-spacing: -1px; }
 .parcelar { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: -4px 0 12px; }
 .parcelar-t { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 14px; color: var(--ink); margin-bottom: 9px; }
 .parcelas-opcoes { display: grid; grid-template-columns: 1.4fr repeat(5, 1fr); gap: 6px; }
@@ -271,7 +272,7 @@ body {
 .pecas { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 6px 10px; margin-bottom: 6px; }
 .peca { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
 .peca .n { flex: 1; min-width: 0; font-weight: 600; }
-.peca .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 15px; color: var(--debt); }
+.peca .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; color: var(--debt); }
 .peca-total { font-size: 12px; color: var(--muted); padding: 7px 0 3px; }
 .outra-peca {
   display: block; width: 100%; margin: -6px 0 12px; padding: 9px 0; border: 1px dashed var(--debt); border-radius: 12px;
@@ -320,7 +321,7 @@ body {
 .crow .nm { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13.5px; letter-spacing: -.2px; }
 .crow .sub { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
 .crow .right { text-align: right; flex: 0 0 auto; }
-.crow .sal { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 16.5px; letter-spacing: -.4px; }
+.crow .sal { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16.5px; letter-spacing: -.4px; }
 .crow .sal.dev { color: var(--debt); }
 .crow .sal.zero { color: var(--muted); }
 .crow.on { border-color: var(--primary); background: var(--primary-soft); }
@@ -344,7 +345,7 @@ body {
 .ficha-head .tel { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .ficha-sal { background: var(--debt-soft); border-radius: 16px; padding: 13px; margin-top: 15px; }
 .ficha-sal .l { font-size: 11.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #B0393D; }
-.ficha-sal .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 33px; color: var(--debt); letter-spacing: -1px; margin-top: 2px; }
+.ficha-sal .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 33px; color: var(--debt); letter-spacing: -1px; margin-top: 2px; }
 .ficha-sal.ok { background: var(--paid-soft); }
 .ficha-sal.ok .l { color: #0B7C56; }
 .ficha-sal.ok .v { color: var(--paid); }
@@ -371,11 +372,11 @@ body {
 .ext .b { flex: 1; min-width: 0; }
 .ext .it { font-size: 13px; font-weight: 600; }
 .ext .dt { font-size: 12px; color: var(--muted); margin-top: 1px; }
-.ext .vl { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 16px; }
+.ext .vl { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; }
 .ext .vl.debt { color: var(--debt); }
 .ext .vl.paid { color: var(--paid); }
 .valor-anot { text-align: right; flex: 0 0 auto; }
-.valor-anot .vv { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 16px; }
+.valor-anot .vv { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; }
 .valor-anot .vt { font-size: 12.5px; font-weight: 600; margin-top: 1px; }
 .valor-anot.debt { color: var(--debt); }
 .valor-anot.paid { color: var(--paid); }
@@ -388,7 +389,7 @@ body {
   display: flex; align-items: baseline; justify-content: space-between; margin: 18px 2px 9px;
   font-size: 12px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--muted);
 }
-.secao-titulo b { font-family: 'JetBrains Mono'; font-size: 18px; letter-spacing: -.4px; text-transform: none; color: var(--debt); }
+.secao-titulo b { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 18px; letter-spacing: -.4px; text-transform: none; color: var(--debt); }
 .compra { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
 .compra-cab { padding: 11px 14px 9px; border-bottom: 1px solid var(--line); background: var(--surface); }
 .compra-nome { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 14.5px; }
@@ -407,7 +408,7 @@ body {
 .prazo.soon { color: #9A6B0C; }
 .prazo.ok { color: var(--ink); }
 .falta { font-size: 12px; color: var(--muted); margin-top: 1px; }
-.compra-valor { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 16px; color: var(--debt); flex: 0 0 auto; }
+.compra-valor { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; color: var(--debt); flex: 0 0 auto; }
 
 /* ---------- FINANCEIRO ---------- */
 .fin-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -417,7 +418,7 @@ body {
 .fin-card .l { font-size: 12px; font-weight: 600; color: var(--muted); }
 .fin-card.rec .l { color: #B0393D; }
 .fin-card.pag .l { color: #0B7C56; }
-.fin-card .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 25px; letter-spacing: -.8px; margin-top: 5px; }
+.fin-card .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: clamp(17px, 5.2vw, 25px); letter-spacing: -.8px; margin-top: 5px; white-space: nowrap; }
 .fin-card.rec .v { color: var(--debt); }
 .fin-card.pag .v { color: var(--paid); }
 .fin-card .d { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
@@ -431,7 +432,7 @@ body {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%;
   justify-content: flex-end; background: none; border: none; padding: 0; cursor: pointer; border-radius: 6px;
 }
-.bcol .lb { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono'; }
+.bcol .lb { font-size: 12px; color: var(--muted); font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .bcol.on .lb { color: var(--primary); font-weight: 700; }
 .bstack { width: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; height: 100%; }
 .bseg { width: 100%; border-radius: 4px; }
@@ -455,7 +456,7 @@ body {
 .frow .b { flex: 1; min-width: 0; }
 .frow .n { font-size: 13px; font-weight: 600; }
 .frow .m { font-size: 12px; color: var(--muted); margin-top: 1px; }
-.frow .v { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 16px; color: var(--paid); }
+.frow .v { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; color: var(--paid); }
 .frow .v.debt { color: var(--debt); }
 
 /* ---------- FAB ---------- */
@@ -507,11 +508,11 @@ body {
 .prow .info { flex: 1; min-width: 0; }
 .prow .nm { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13px; }
 .prow .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-.prow .sal { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 15px; }
+.prow .sal { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; }
 .prow .sal.dev { color: var(--debt); }
 .prow .sal.zero { color: var(--muted); }
 .amt-d {
-  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 46px; text-align: center; letter-spacing: -1.5px; padding: 6px 0 2px;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 46px; text-align: center; letter-spacing: -1.5px; padding: 6px 0 2px;
 }
 .desc {
   display: flex; align-items: center; gap: 9px; background: var(--card); border: 1px solid var(--line);
@@ -521,7 +522,7 @@ body {
 .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
 .pad button {
   padding: 16px 0; border-radius: 13px; border: 1px solid var(--line); background: var(--card);
-  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 23px; color: var(--ink); cursor: pointer;
+  font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 23px; color: var(--ink); cursor: pointer;
 }
 .pad button:active { background: #EDEFF6; }
 .cf {
